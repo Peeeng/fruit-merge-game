@@ -38,8 +38,8 @@ class FruitMergeGame {
     this.gameContainer = document.getElementById("gameContainer");
     this.scoreValue = document.getElementById("scoreValue");
     this.bestScoreValue = document.getElementById("bestScoreValue");
-    this.dropIndicator = document.getElementById("dropIndicator");
-    this.ghostFruit = document.getElementById("ghostFruit");
+    this.dropPreviewCanvas = document.getElementById("dropPreviewCanvas");
+    this.dropPreviewCtx = this.dropPreviewCanvas.getContext("2d");
     this.landingMarker = document.getElementById("landingMarker");
     this.dangerLineElement = document.getElementById("dangerLine");
     this.soundButton = document.getElementById("soundButton");
@@ -60,7 +60,7 @@ class FruitMergeGame {
     this.height = this.canvas.height;
     this.wallThickness = 80;
     this.dangerLineY = 120;
-    this.dropOffsetAboveDangerLine = 40;
+    this.dropOffsetAboveDangerLine = 24;
     this.dropY = this.dangerLineY - this.dropOffsetAboveDangerLine;
     this.maxBodies = 80;
     this.maxEffects = 18;
@@ -421,7 +421,7 @@ class FruitMergeGame {
     const level = this.nextFruitLevel;
     const radius = FRUITS[level].radius;
     const dropX = this.clamp(this.currentDropX, radius + 8, this.width - radius - 8);
-    const dropY = this.dropY;
+    const dropY = this.dangerLineY - radius - 6;
 
     this.createFruit(level, dropX, dropY, {
       angle: (Math.random() - 0.5) * 0.08
@@ -436,7 +436,9 @@ class FruitMergeGame {
     }, this.dropCooldown);
 
     this.nextFruitLevel = this.getRandomStartFruitLevel();
+    this.animatePreviewRefresh();
     this.drawNextFruitPreview();
+    this.updateDropIndicator();
   }
 
   /**
@@ -1194,6 +1196,19 @@ class FruitMergeGame {
   }
 
   /**
+   * 下一颗水果切换时做一个短促过渡动画。
+   */
+  animatePreviewRefresh() {
+    this.dropPreviewCanvas.style.transform = "translateY(-8px) scale(0.9)";
+    this.nextCanvas.style.transform = "scale(0.88)";
+
+    window.setTimeout(() => {
+      this.dropPreviewCanvas.style.transform = "translateY(0) scale(1)";
+      this.nextCanvas.style.transform = "scale(1)";
+    }, 180);
+  }
+
+  /**
    * 更新合成动画生命周期。
    */
   updateEffects() {
@@ -1293,21 +1308,35 @@ class FruitMergeGame {
     const x = this.clamp(this.currentDropX, fruit.radius + 8, this.width - fruit.radius - 8);
     const left = (x / this.width) * 100;
     const visible = this.isPointerActive && !this.isGameOver;
-    const indicatorTop = Math.max(8, this.dropY - 28);
-    const ghostTop = this.dropY - fruit.radius;
+    const dropCenterY = this.dangerLineY - fruit.radius - 6;
+    const previewPadding = 24;
+    const previewSize = fruit.radius * 2 + previewPadding;
+    const previewTop = dropCenterY - previewSize / 2;
 
-    this.dropIndicator.style.left = `${left}%`;
-    this.dropIndicator.style.top = `${(indicatorTop / this.height) * 100}%`;
-    this.dropIndicator.style.opacity = visible ? "1" : "0.65";
+    this.dropPreviewCanvas.width = previewSize;
+    this.dropPreviewCanvas.height = previewSize;
+    this.dropPreviewCanvas.style.left = `${left}%`;
+    this.dropPreviewCanvas.style.top = `${(previewTop / this.height) * 100}%`;
+    this.dropPreviewCanvas.style.width = `${previewSize}px`;
+    this.dropPreviewCanvas.style.height = `${previewSize}px`;
+    this.dropPreviewCanvas.style.marginLeft = `${-previewSize / 2}px`;
+    this.dropPreviewCanvas.style.opacity = visible ? "0.96" : "0.38";
 
-    this.ghostFruit.style.left = `${left}%`;
-    this.ghostFruit.style.top = `${(ghostTop / this.height) * 100}%`;
-    this.ghostFruit.style.width = `${fruit.radius * 2}px`;
-    this.ghostFruit.style.height = `${fruit.radius * 2}px`;
-    this.ghostFruit.style.marginLeft = `${-fruit.radius}px`;
-    this.ghostFruit.style.background = `${fruit.accent}88`;
-    this.ghostFruit.style.borderColor = fruit.color;
-    this.ghostFruit.style.opacity = visible ? "0.95" : "0.35";
+    this.dropPreviewCtx.clearRect(0, 0, this.dropPreviewCanvas.width, this.dropPreviewCanvas.height);
+    this.dropPreviewCtx.setTransform(1, 0, 0, 1, 0, 0);
+    this.drawFruit(
+      this.dropPreviewCtx,
+      this.dropPreviewCanvas.width / 2,
+      this.dropPreviewCanvas.height / 2,
+      0,
+      {
+        level: fruit.level,
+        radius: fruit.radius,
+        color: fruit.color,
+        accent: fruit.accent
+      },
+      false
+    );
 
     this.landingMarker.style.left = `${left}%`;
     this.landingMarker.style.width = `${Math.max(36, fruit.radius * 1.9)}px`;
