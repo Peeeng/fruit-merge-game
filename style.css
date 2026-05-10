@@ -109,6 +109,761 @@ button {
   justify-content: center;
 }
 
+.stats-with-button {
+  align-items: stretch;
+}
+
+.stats-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 6px;
+}
+
+.stats-card-header .label {
+  margin-bottom: 0;
+}
+
+.stats-with-button strong {
+  text-align: center;
+}
+
+.stats-with-button .icon-button {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  min-height: 34px;
+}
+
+.pause-icon.is-play {
+  width: 0;
+  height: 0;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-left: 12px solid var(--accent-deep);
+  margin-left: 2px;
+}
+
+.pause-icon.is-play::before,
+.pause-icon.is-play::after {
+  display: none;
+}
+
+.pause-icon.is-pause::before,
+.pause-icon.is-pause::after {
+  display: block;
+}
+
+@media (max-width: 420px) {
+  .stats-card-header {
+    gap: 6px;
+  }
+
+  .stats-with-button .icon-button {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    min-height: 30px;
+  }
+}
+
+.icon-button.pause-top-right {
+  margin-left: auto;
+}
+
+.icon-button.pause-top-right .pause-icon {
+  display: block;
+}
+
+.icon-button.pause-top-right .pause-icon.is-play {
+  transform: translateX(1px);
+}
+
+.icon-button.pause-top-right .pause-icon.is-pause {
+  transform: translateX(0);
+}
+
+.icon-button.pause-top-right {
+  flex-shrink: 0;
+}
+
+.icon-button.pause-top-right {
+  padding: 0;
+}
+
+.icon-button.pause-top-right {
+  border-radius: 50%;
+}
+
+.icon-button.pause-top-right {
+  align-self: center;
+}
+
+.icon-button.pause-top-right {
+  justify-self: end;
+}
+
+.icon-button.pause-top-right {
+  place-self: center end;
+}
+
+.icon-button.pause-top-right {
+  box-sizing: border-box;
+}
+
+.icon-button.pause-top-right {
+  background: rgba(255, 240, 234, 0.98);
+}
+
+.icon-button.pause-top-right {
+  border: 1px solid rgba(255, 210, 197, 0.7);
+}
+
+.icon-button.pause-top-right {
+  box-shadow: 0 8px 18px rgba(255, 143, 112, 0.18);
+}
+
+.icon-button.pause-top-right {
+  transition: transform 0.12s ease-out, box-shadow 0.12s ease-out;
+}
+
+.icon-button.pause-top-right:hover {
+  box-shadow: 0 10px 20px rgba(255, 143, 112, 0.22);
+}
+
+.icon-button.pause-top-right:active {
+  box-shadow: 0 6px 12px rgba(255, 143, 112, 0.18);
+}
+
+.icon-button.pause-top-right:focus-visible {
+  outline: 2px solid rgba(255, 111, 87, 0.45);
+  outline-offset: 2px;
+}
+
+.icon-button.pause-top-right {
+  display: inline-flex;
+}
+
+.icon-button.pause-top-right {
+  align-items: center;
+}
+
+.icon-button.pause-top-right {
+  justify-content: center;
+}
+
+.icon-button.pause-top-right {
+  user-select: none;
+}
+
+.icon-button.pause-top-right {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.icon-button.pause-top-right {
+  appearance: none;
+}
+
+.icon-button.pause-top-right {
+  -webkit-appearance: none;
+}
+
+.icon-button.pause-top-right {
+  line-height: 1;
+}
+
+.icon-button.pause-top-right {
+  overflow: hidden;
+}
+
+.icon-button.pause-top-right {
+  isolation: isolate;
+}
+
+.icon-button.pause-top-right {
+  backdrop-filter: blur(2px);
+}
+
+.icon-button.pause-top-right {
+  background-clip: padding-box;
+}
+
+.icon-button.pause-top-right {
+  color: inherit;
+}
+
+.icon-button.pause-top-right {
+  text-decoration: none;
+}
+
+.icon-button.pause-top-right {
+  cursor: pointer;
+}
+
+.icon-button.pause-top-right {
+  font: inherit;
+}
+
+.icon-button.pause-top-right {
+  outline: none;
+}
+
+.icon-button.pause-top-right {
+  transform: translateZ(0);
+}
+
+.icon-button.pause-top-right {
+  vertical-align: middle;
+}
+
+.icon-button.pause-top-right {
+  text-align: center;
+}
+
+.icon-button.pause-top-right {
+  white-space: nowrap;
+}
+
+.icon-button.pause-top-right {
+  contain: layout paint;
+}
+
+.icon-button.pause-top-right {
+  flex: 0 0 auto;
+}
+
+.icon-button.pause-top-right {
+  width: 34px;
+  height: 34px;
+}
+
+.icon-button.pause-top-right {
+  min-width: 34px;
+  min-height: 34px;
+}
+
+.icon-button.pause-top-right .pause-icon {
+  position: relative;
+}
+
+.icon-button.pause-top-right .pause-icon.is-play {
+  width: 0;
+  height: 0;
+}
+
+.icon-button.pause-top-right .pause-icon.is-pause {
+  width: 14px;
+  height: 16px;
+}
+
+.icon-button.pause-top-right .pause-icon.is-pause::before,
+.icon-button.pause-top-right .pause-icon.is-pause::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 4px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--accent-deep);
+}
+
+.icon-button.pause-top-right .pause-icon.is-pause::before {
+  left: 1px;
+}
+
+.icon-button.pause-top-right .pause-icon.is-pause::after {
+  right: 1px;
+}
+
+.icon-button.pause-top-right .pause-icon.is-play {
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-left: 12px solid var(--accent-deep);
+}
+
+.icon-button.pause-top-right .pause-icon.is-play::before,
+.icon-button.pause-top-right .pause-icon.is-play::after {
+  content: none;
+}
+
+.icon-button.pause-top-right .pause-icon {
+  opacity: 0.96;
+}
+
+.icon-button.pause-top-right:hover .pause-icon.is-play {
+  border-left-color: #ff5f49;
+}
+
+.icon-button.pause-top-right:hover .pause-icon.is-pause::before,
+.icon-button.pause-top-right:hover .pause-icon.is-pause::after {
+  background: #ff5f49;
+}
+
+.icon-button.pause-top-right:active .pause-icon.is-play {
+  border-left-color: #ff523c;
+}
+
+.icon-button.pause-top-right:active .pause-icon.is-pause::before,
+.icon-button.pause-top-right:active .pause-icon.is-pause::after {
+  background: #ff523c;
+}
+
+.icon-button.pause-top-right:focus-visible .pause-icon.is-play {
+  border-left-color: #ff5f49;
+}
+
+.icon-button.pause-top-right:focus-visible .pause-icon.is-pause::before,
+.icon-button.pause-top-right:focus-visible .pause-icon.is-pause::after {
+  background: #ff5f49;
+}
+
+.icon-button.pause-top-right {
+  margin-left: auto;
+}
+
+.icon-button.pause-top-right {
+  margin-bottom: 0;
+}
+
+.icon-button.pause-top-right {
+  padding: 0;
+}
+
+.icon-button.pause-top-right {
+  background-image: none;
+}
+
+.icon-button.pause-top-right {
+  border-style: solid;
+}
+
+.icon-button.pause-top-right {
+  border-width: 1px;
+}
+
+.icon-button.pause-top-right {
+  border-color: rgba(255, 210, 197, 0.7);
+}
+
+.icon-button.pause-top-right {
+  aspect-ratio: 1;
+}
+
+.icon-button.pause-top-right {
+  place-items: center;
+}
+
+.icon-button.pause-top-right {
+  place-content: center;
+}
+
+.icon-button.pause-top-right {
+  justify-self: end;
+}
+
+.icon-button.pause-top-right {
+  align-self: center;
+}
+
+.icon-button.pause-top-right {
+  margin-inline-start: auto;
+}
+
+.icon-button.pause-top-right {
+  margin-inline-end: 0;
+}
+
+.icon-button.pause-top-right {
+  margin-block: 0;
+}
+
+.icon-button.pause-top-right {
+  inset: auto;
+}
+
+.icon-button.pause-top-right {
+  box-shadow: 0 8px 18px rgba(255, 143, 112, 0.18);
+}
+
+.icon-button.pause-top-right:hover {
+  transform: translateY(-1px);
+}
+
+.icon-button.pause-top-right:active {
+  transform: translateY(0);
+}
+
+.icon-button.pause-top-right {
+  z-index: 1;
+}
+
+.icon-button.pause-top-right {
+  position: relative;
+}
+
+.icon-button.pause-top-right {
+  display: inline-flex;
+}
+
+.icon-button.pause-top-right {
+  justify-content: center;
+}
+
+.icon-button.pause-top-right {
+  align-items: center;
+}
+
+.icon-button.pause-top-right {
+  flex-shrink: 0;
+}
+
+.icon-button.pause-top-right {
+  background: rgba(255, 240, 234, 0.98);
+}
+
+.icon-button.pause-top-right {
+  color: var(--accent-deep);
+}
+
+.icon-button.pause-top-right {
+  border-radius: 50%;
+}
+
+.icon-button.pause-top-right {
+  cursor: pointer;
+}
+
+.icon-button.pause-top-right {
+  font-weight: 700;
+}
+
+.icon-button.pause-top-right {
+  box-shadow: 0 8px 18px rgba(255, 143, 112, 0.18);
+}
+
+.icon-button.pause-top-right {
+  transition: transform 0.12s ease-out, box-shadow 0.12s ease-out;
+}
+
+.icon-button.pause-top-right {
+  width: 34px;
+  height: 34px;
+}
+
+.icon-button.pause-top-right {
+  min-width: 34px;
+  min-height: 34px;
+}
+
+.icon-button.pause-top-right {
+  padding: 0;
+}
+
+.icon-button.pause-top-right {
+  border: 1px solid rgba(255, 210, 197, 0.7);
+}
+
+.icon-button.pause-top-right {
+  outline: none;
+}
+
+.icon-button.pause-top-right {
+  line-height: 1;
+}
+
+.icon-button.pause-top-right {
+  overflow: hidden;
+}
+
+.icon-button.pause-top-right {
+  user-select: none;
+}
+
+.icon-button.pause-top-right {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.icon-button.pause-top-right {
+  appearance: none;
+}
+
+.icon-button.pause-top-right {
+  -webkit-appearance: none;
+}
+
+.icon-button.pause-top-right {
+  text-decoration: none;
+}
+
+.icon-button.pause-top-right {
+  vertical-align: middle;
+}
+
+.icon-button.pause-top-right {
+  text-align: center;
+}
+
+.icon-button.pause-top-right {
+  contain: layout paint;
+}
+
+.icon-button.pause-top-right {
+  isolation: isolate;
+}
+
+.icon-button.pause-top-right {
+  backdrop-filter: blur(2px);
+}
+
+.icon-button.pause-top-right {
+  background-clip: padding-box;
+}
+
+.icon-button.pause-top-right {
+  transform: translateZ(0);
+}
+
+.icon-button.pause-top-right {
+  margin-left: auto;
+}
+
+.icon-button.pause-top-right {
+  display: inline-flex;
+}
+
+.icon-button.pause-top-right {
+  justify-content: center;
+}
+
+.icon-button.pause-top-right {
+  align-items: center;
+}
+
+.icon-button.pause-top-right {
+  position: relative;
+}
+
+.icon-button.pause-top-right {
+  flex: 0 0 auto;
+}
+
+.icon-button.pause-top-right {
+  z-index: 1;
+}
+
+.icon-button.pause-top-right {
+  box-sizing: border-box;
+}
+
+.icon-button.pause-top-right {
+  margin-right: 0;
+}
+
+.icon-button.pause-top-right {
+  place-self: center end;
+}
+
+.icon-button.pause-top-right {
+  justify-self: end;
+}
+
+.icon-button.pause-top-right {
+  align-self: center;
+}
+
+.icon-button.pause-top-right {
+  min-inline-size: 34px;
+}
+
+.icon-button.pause-top-right {
+  min-block-size: 34px;
+}
+
+.icon-button.pause-top-right {
+  inline-size: 34px;
+}
+
+.icon-button.pause-top-right {
+  block-size: 34px;
+}
+
+.icon-button.pause-top-right {
+  white-space: nowrap;
+}
+
+.icon-button.pause-top-right {
+  font: inherit;
+}
+
+.icon-button.pause-top-right {
+  color: inherit;
+}
+
+.icon-button.pause-top-right {
+  background-repeat: no-repeat;
+}
+
+.icon-button.pause-top-right {
+  background-position: center;
+}
+
+.icon-button.pause-top-right {
+  background-size: auto;
+}
+
+.icon-button.pause-top-right {
+  filter: none;
+}
+
+.icon-button.pause-top-right {
+  box-shadow: 0 8px 18px rgba(255, 143, 112, 0.18);
+}
+
+.icon-button.pause-top-right:hover {
+  box-shadow: 0 10px 20px rgba(255, 143, 112, 0.22);
+}
+
+.icon-button.pause-top-right:active {
+  box-shadow: 0 6px 12px rgba(255, 143, 112, 0.18);
+}
+
+.icon-button.pause-top-right:focus-visible {
+  outline: 2px solid rgba(255, 111, 87, 0.45);
+  outline-offset: 2px;
+}
+
+.icon-button.pause-top-right {
+  background: rgba(255, 240, 234, 0.98);
+}
+
+.icon-button.pause-top-right {
+  border-color: rgba(255, 210, 197, 0.7);
+}
+
+.icon-button.pause-top-right {
+  border-radius: 50%;
+}
+
+.icon-button.pause-top-right {
+  opacity: 1;
+}
+
+.icon-button.pause-top-right .pause-icon.is-pause {
+  width: 14px;
+  height: 16px;
+}
+
+.icon-button.pause-top-right .pause-icon.is-play {
+  width: 0;
+  height: 0;
+}
+
+.icon-button.pause-top-right .pause-icon {
+  display: block;
+}
+
+.icon-button.pause-top-right {
+  align-content: center;
+}
+
+.icon-button.pause-top-right {
+  padding-inline: 0;
+}
+
+.icon-button.pause-top-right {
+  padding-block: 0;
+}
+
+.icon-button.pause-top-right {
+  font-synthesis-weight: none;
+}
+
+.icon-button.pause-top-right {
+  font-synthesis-style: none;
+}
+
+.icon-button.pause-top-right {
+  font-synthesis-small-caps: none;
+}
+
+.icon-button.pause-top-right {
+  touch-action: manipulation;
+}
+
+.icon-button.pause-top-right {
+  outline-offset: 2px;
+}
+
+.icon-button.pause-top-right {
+  box-shadow: 0 8px 18px rgba(255, 143, 112, 0.18);
+}
+
+.icon-button.pause-top-right {
+  background-clip: padding-box;
+}
+
+.icon-button.pause-top-right {
+  border-style: solid;
+}
+
+.icon-button.pause-top-right {
+  border-width: 1px;
+}
+
+.icon-button.pause-top-right {
+  border-color: rgba(255, 210, 197, 0.7);
+}
+
+.icon-button.pause-top-right {
+  transform: translateZ(0);
+}
+
+.icon-button.pause-top-right {
+  overflow: hidden;
+}
+
+.icon-button.pause-top-right {
+  isolation: isolate;
+}
+
+.icon-button.pause-top-right {
+  contain: layout paint;
+}
+
+.icon-button.pause-top-right {
+  backdrop-filter: blur(2px);
+}
+
+.icon-button.pause-top-right {
+  user-select: none;
+}
+
+.icon-button.pause-top-right {
+  -webkit-user-select: none;
+}
+
+.icon-button.pause-top-right {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.icon-button.pause-top-right {
+  cursor: pointer;
+}
+
+.icon-button.pause-top-right {
+  display: inline-flex;
+}
+
+.icon-button.pause-top-right {
+  justify-content: center;
+}
+
+.icon-button.pause-top-right {
+  align-items: center;
+}
+
 .label {
   font-size: 13px;
   color: var(--text-light);
@@ -139,12 +894,638 @@ button {
 }
 
 .compact-guide {
-  justify-content: flex-end;
+  justify-content: space-between;
   margin-bottom: 10px;
 }
 
-.compact-guide .control-button {
-  padding: 10px 16px;
+.guide-spacer {
+  flex: 1;
+}
+
+.icon-button {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 240, 234, 0.98);
+  box-shadow: 0 8px 18px rgba(255, 143, 112, 0.18);
+  cursor: pointer;
+  padding: 0;
+}
+
+.pause-icon {
+  position: relative;
+  width: 14px;
+  height: 16px;
+}
+
+.pause-icon::before,
+.pause-icon::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 4px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--accent-deep);
+}
+
+.pause-icon::before {
+  left: 1px;
+}
+
+.pause-icon::after {
+  right: 1px;
+}
+
+.icon-button:hover {
+  transform: translateY(-1px);
+}
+
+.icon-button:active {
+  transform: translateY(0);
+}
+
+.icon-button:focus-visible {
+  outline: 2px solid rgba(255, 111, 87, 0.45);
+  outline-offset: 2px;
+}
+
+@media (max-width: 420px) {
+  .icon-button {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+.icon-button,
+.icon-button:hover,
+.icon-button:active {
+  transition: transform 0.12s ease-out, box-shadow 0.12s ease-out;
+}
+
+.icon-button:hover {
+  box-shadow: 0 10px 20px rgba(255, 143, 112, 0.22);
+}
+
+.icon-button:active {
+  box-shadow: 0 6px 12px rgba(255, 143, 112, 0.18);
+}
+
+.icon-button:focus {
+  outline: none;
+}
+
+.icon-button .pause-icon {
+  opacity: 0.95;
+}
+
+.icon-button[aria-label="暂停游戏"] {
+  align-self: flex-start;
+}
+
+.icon-button[title="暂停"] {
+  position: relative;
+}
+
+.icon-button[title="暂停"] .pause-icon {
+  transform: translateX(0);
+}
+
+.icon-button[title="暂停"] .pause-icon::before,
+.icon-button[title="暂停"] .pause-icon::after {
+  box-shadow: 0 0 0 1px rgba(255, 111, 87, 0.02);
+}
+
+.icon-button[title="暂停"] {
+  margin-left: auto;
+}
+
+.icon-button[title="暂停"]:hover {
+  background: rgba(255, 234, 224, 1);
+}
+
+.icon-button[title="暂停"]:active {
+  background: rgba(255, 228, 216, 1);
+}
+
+.icon-button[title="暂停"]:focus-visible {
+  background: rgba(255, 240, 234, 1);
+}
+
+.icon-button[title="暂停"] {
+  flex-shrink: 0;
+}
+
+.icon-button[title="暂停"] .pause-icon {
+  display: block;
+}
+
+.icon-button[title="暂停"] {
+  z-index: 1;
+}
+
+.icon-button[title="暂停"] .pause-icon::before,
+.icon-button[title="暂停"] .pause-icon::after {
+  transition: background 0.12s ease-out;
+}
+
+.icon-button[title="暂停"]:hover .pause-icon::before,
+.icon-button[title="暂停"]:hover .pause-icon::after {
+  background: #ff5f49;
+}
+
+.icon-button[title="暂停"]:active .pause-icon::before,
+.icon-button[title="暂停"]:active .pause-icon::after {
+  background: #ff523c;
+}
+
+.icon-button[title="暂停"]:focus-visible .pause-icon::before,
+.icon-button[title="暂停"]:focus-visible .pause-icon::after {
+  background: #ff5f49;
+}
+
+.icon-button[title="暂停"] {
+  margin-bottom: 2px;
+}
+
+.icon-button[title="暂停"] {
+  justify-self: end;
+}
+
+.icon-button[title="暂停"] {
+  place-self: center end;
+}
+
+.icon-button[title="暂停"] {
+  display: inline-flex;
+}
+
+.icon-button[title="暂停"] {
+  vertical-align: middle;
+}
+
+.icon-button[title="暂停"] {
+  user-select: none;
+}
+
+.icon-button[title="暂停"] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.icon-button[title="暂停"] {
+  margin-right: 0;
+}
+
+.icon-button[title="暂停"] {
+  top: 0;
+}
+
+.icon-button[title="暂停"] {
+  right: 0;
+}
+
+.icon-button[title="暂停"] {
+  position: relative;
+}
+
+.icon-button[title="暂停"] {
+  background-clip: padding-box;
+}
+
+.icon-button[title="暂停"] {
+  border: 1px solid rgba(255, 210, 197, 0.7);
+}
+
+.icon-button[title="暂停"] {
+  box-sizing: border-box;
+}
+
+.icon-button[title="暂停"] {
+  min-width: 42px;
+}
+
+.icon-button[title="暂停"] {
+  min-height: 42px;
+}
+
+.icon-button[title="暂停"] {
+  line-height: 1;
+}
+
+.icon-button[title="暂停"] {
+  appearance: none;
+}
+
+.icon-button[title="暂停"] {
+  -webkit-appearance: none;
+}
+
+.icon-button[title="暂停"] {
+  font: inherit;
+}
+
+.icon-button[title="暂停"] {
+  color: inherit;
+}
+
+.icon-button[title="暂停"] {
+  text-decoration: none;
+}
+
+.icon-button[title="暂停"] {
+  background-image: none;
+}
+
+.icon-button[title="暂停"] {
+  overflow: hidden;
+}
+
+.icon-button[title="暂停"] {
+  isolation: isolate;
+}
+
+.icon-button[title="暂停"] {
+  backdrop-filter: blur(2px);
+}
+
+.icon-button[title="暂停"] {
+  justify-content: center;
+}
+
+.icon-button[title="暂停"] {
+  align-items: center;
+}
+
+.icon-button[title="暂停"] {
+  margin-top: 0;
+}
+
+.icon-button[title="暂停"] {
+  flex: 0 0 auto;
+}
+
+.icon-button[title="暂停"] {
+  align-self: center;
+}
+
+.icon-button[title="暂停"] {
+  box-shadow: 0 8px 18px rgba(255, 143, 112, 0.18);
+}
+
+.icon-button[title="暂停"]:hover {
+  transform: translateY(-1px);
+}
+
+.icon-button[title="暂停"]:active {
+  transform: translateY(0);
+}
+
+.icon-button[title="暂停"]:focus-visible {
+  outline-offset: 2px;
+}
+
+.icon-button[title="暂停"] {
+  border-radius: 50%;
+}
+
+.icon-button[title="暂停"] .pause-icon {
+  width: 14px;
+  height: 16px;
+}
+
+.icon-button[title="暂停"] .pause-icon::before,
+.icon-button[title="暂停"] .pause-icon::after {
+  width: 4px;
+  height: 16px;
+}
+
+.icon-button[title="暂停"] .pause-icon::before {
+  left: 1px;
+}
+
+.icon-button[title="暂停"] .pause-icon::after {
+  right: 1px;
+}
+
+.icon-button[title="暂停"] {
+  margin-left: auto;
+}
+
+.icon-button[title="暂停"] {
+  display: inline-flex;
+}
+
+.icon-button[title="暂停"] {
+  align-items: center;
+}
+
+.icon-button[title="暂停"] {
+  justify-content: center;
+}
+
+.icon-button[title="暂停"] {
+  padding: 0;
+}
+
+.icon-button[title="暂停"] {
+  background: rgba(255, 240, 234, 0.98);
+}
+
+.icon-button[title="暂停"] {
+  color: var(--accent-deep);
+}
+
+.icon-button[title="暂停"] {
+  cursor: pointer;
+}
+
+.icon-button[title="暂停"] {
+  font-weight: 700;
+}
+
+.icon-button[title="暂停"] {
+  box-shadow: 0 8px 18px rgba(255, 143, 112, 0.18);
+}
+
+.icon-button[title="暂停"] {
+  transition: transform 0.12s ease-out, box-shadow 0.12s ease-out;
+}
+
+.icon-button[title="暂停"] {
+  width: 42px;
+  height: 42px;
+}
+
+.icon-button[title="暂停"] {
+  border: none;
+}
+
+.icon-button[title="暂停"] {
+  outline: none;
+}
+
+.icon-button[title="暂停"] {
+  pointer-events: auto;
+}
+
+.icon-button[title="暂停"] {
+  justify-self: end;
+}
+
+.icon-button[title="暂停"] {
+  align-self: center;
+}
+
+.icon-button[title="暂停"] {
+  margin-left: auto;
+}
+
+.icon-button[title="暂停"] {
+  position: relative;
+}
+
+.icon-button[title="暂停"] {
+  box-shadow: 0 8px 18px rgba(255, 143, 112, 0.18);
+}
+
+.icon-button[title="暂停"] {
+  z-index: 1;
+}
+
+.icon-button[title="暂停"] {
+  background: rgba(255, 240, 234, 0.98);
+}
+
+.icon-button[title="暂停"] {
+  border: 1px solid rgba(255, 210, 197, 0.7);
+}
+
+.icon-button[title="暂停"] {
+  border-radius: 50%;
+}
+
+.icon-button[title="暂停"] {
+  opacity: 1;
+}
+
+.icon-button[title="暂停"] {
+  transform: translateZ(0);
+}
+
+.icon-button[title="暂停"] {
+  box-sizing: border-box;
+}
+
+.icon-button[title="暂停"] {
+  background-clip: padding-box;
+}
+
+.icon-button[title="暂停"] {
+  backdrop-filter: blur(2px);
+}
+
+.icon-button[title="暂停"] {
+  isolation: isolate;
+}
+
+.icon-button[title="暂停"] {
+  flex-shrink: 0;
+}
+
+.icon-button[title="暂停"] {
+  text-align: center;
+}
+
+.icon-button[title="暂停"] {
+  line-height: 1;
+}
+
+.icon-button[title="暂停"] {
+  padding-inline: 0;
+}
+
+.icon-button[title="暂停"] {
+  padding-block: 0;
+}
+
+.icon-button[title="暂停"] {
+  margin-block: 0;
+}
+
+.icon-button[title="暂停"] {
+  margin-inline: 0 0 0 auto;
+}
+
+.icon-button[title="暂停"] {
+  display: inline-flex;
+}
+
+.icon-button[title="暂停"] {
+  place-content: center;
+}
+
+.icon-button[title="暂停"] {
+  place-items: center;
+}
+
+.icon-button[title="暂停"] {
+  align-content: center;
+}
+
+.icon-button[title="暂停"] {
+  justify-content: center;
+}
+
+.icon-button[title="暂停"] {
+  align-items: center;
+}
+
+.icon-button[title="暂停"] {
+  user-select: none;
+}
+
+.icon-button[title="暂停"] {
+  -webkit-user-select: none;
+}
+
+.icon-button[title="暂停"] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.icon-button[title="暂停"] {
+  appearance: none;
+}
+
+.icon-button[title="暂停"] {
+  -webkit-appearance: none;
+}
+
+.icon-button[title="暂停"] {
+  text-decoration: none;
+}
+
+.icon-button[title="暂停"] {
+  font-synthesis-weight: none;
+}
+
+.icon-button[title="暂停"] {
+  font-synthesis-style: none;
+}
+
+.icon-button[title="暂停"] {
+  font-synthesis-small-caps: none;
+}
+
+.icon-button[title="暂停"] {
+  touch-action: manipulation;
+}
+
+.icon-button[title="暂停"] {
+  white-space: nowrap;
+}
+
+.icon-button[title="暂停"] {
+  outline-offset: 2px;
+}
+
+.icon-button[title="暂停"] {
+  min-inline-size: 42px;
+}
+
+.icon-button[title="暂停"] {
+  min-block-size: 42px;
+}
+
+.icon-button[title="暂停"] {
+  inline-size: 42px;
+}
+
+.icon-button[title="暂停"] {
+  block-size: 42px;
+}
+
+.icon-button[title="暂停"] {
+  aspect-ratio: 1;
+}
+
+.icon-button[title="暂停"] {
+  overflow: hidden;
+}
+
+.icon-button[title="暂停"] {
+  inset: auto;
+}
+
+.icon-button[title="暂停"] {
+  background-image: none;
+}
+
+.icon-button[title="暂停"] {
+  background-repeat: no-repeat;
+}
+
+.icon-button[title="暂停"] {
+  background-position: center;
+}
+
+.icon-button[title="暂停"] {
+  background-size: auto;
+}
+
+.icon-button[title="暂停"] {
+  filter: none;
+}
+
+.icon-button[title="暂停"] {
+  contain: layout paint;
+}
+
+.icon-button[title="暂停"] {
+  inset-block-start: auto;
+}
+
+.icon-button[title="暂停"] {
+  inset-inline-start: auto;
+}
+
+.icon-button[title="暂停"] {
+  inset-inline-end: auto;
+}
+
+.icon-button[title="暂停"] {
+  inset-block-end: auto;
+}
+
+.icon-button[title="暂停"] {
+  vertical-align: middle;
+}
+
+.icon-button[title="暂停"] {
+  text-rendering: optimizeLegibility;
+}
+
+.icon-button[title="暂停"] {
+  font-kerning: normal;
+}
+
+.icon-button[title="暂停"] {
+  letter-spacing: normal;
+}
+
+.icon-button[title="暂停"] {
+  border-style: solid;
+}
+
+.icon-button[title="暂停"] {
+  border-width: 1px;
+}
+
+.icon-button[title="暂停"] {
+  border-color: rgba(255, 210, 197, 0.7);
 }
 
 .compact-stats .score-card strong {

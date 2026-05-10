@@ -1046,38 +1046,91 @@ class FruitMergeGame {
     const bodyRadiusX = radius * 0.72;
     const bodyRadiusY = radius * 0.9;
 
-    ctx.fillStyle = "#f5bf33";
+    const bodyGradient = ctx.createRadialGradient(
+      -bodyRadiusX * 0.35,
+      bodyCenterY - bodyRadiusY * 0.42,
+      radius * 0.08,
+      0,
+      bodyCenterY,
+      bodyRadiusY * 1.2
+    );
+    bodyGradient.addColorStop(0, "#ffe58a");
+    bodyGradient.addColorStop(0.45, "#f6c93e");
+    bodyGradient.addColorStop(1, "#e3a91f");
+
+    ctx.fillStyle = bodyGradient;
     ctx.beginPath();
     ctx.ellipse(0, bodyCenterY, bodyRadiusX, bodyRadiusY, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.fillStyle = "#4caf50";
-    for (let i = -2; i <= 2; i += 1) {
+    ctx.strokeStyle = "rgba(184, 120, 20, 0.45)";
+    ctx.lineWidth = Math.max(2.5, radius * 0.05);
+    ctx.beginPath();
+    ctx.ellipse(0, bodyCenterY, bodyRadiusX, bodyRadiusY, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.fillStyle = "rgba(255,255,255,0.16)";
+    ctx.beginPath();
+    ctx.ellipse(-bodyRadiusX * 0.26, bodyCenterY - bodyRadiusY * 0.42, bodyRadiusX * 0.32, bodyRadiusY * 0.15, -0.4, 0, Math.PI * 2);
+    ctx.fill();
+
+    const leafColors = ["#64c55a", "#49a645", "#7fd16d", "#3f9540", "#5cb650"];
+    const leafData = [
+      { x: -0.24, y: -1.02, tipX: -0.34, tipY: -1.34, bend: -0.14 },
+      { x: -0.1, y: -0.98, tipX: -0.1, tipY: -1.42, bend: -0.04 },
+      { x: 0.04, y: -0.96, tipX: 0.12, tipY: -1.36, bend: 0.06 },
+      { x: 0.16, y: -0.92, tipX: 0.28, tipY: -1.24, bend: 0.12 },
+      { x: 0.28, y: -0.88, tipX: 0.42, tipY: -1.1, bend: 0.18 }
+    ];
+
+    leafData.forEach((leaf, index) => {
+      ctx.fillStyle = leafColors[index];
       ctx.beginPath();
-      ctx.moveTo(0, -radius * 0.44);
-      ctx.lineTo(i * radius * 0.18, -radius * 1.18);
-      ctx.lineTo(i * radius * 0.08 + radius * 0.08, -radius * 0.48);
+      ctx.moveTo(radius * leaf.x, radius * leaf.y);
+      ctx.quadraticCurveTo(radius * (leaf.x + leaf.bend), radius * (leaf.y - 0.18), radius * leaf.tipX, radius * leaf.tipY);
+      ctx.quadraticCurveTo(radius * (leaf.tipX - 0.04), radius * (leaf.tipY + 0.16), radius * (leaf.x + 0.06), radius * (leaf.y + 0.04));
       ctx.closePath();
       ctx.fill();
-    }
+    });
 
     ctx.save();
     ctx.beginPath();
     ctx.ellipse(0, bodyCenterY, bodyRadiusX * 0.98, bodyRadiusY * 0.98, 0, 0, Math.PI * 2);
     ctx.clip();
 
-    ctx.strokeStyle = "rgba(183, 119, 23, 0.55)";
-    ctx.lineWidth = Math.max(2, radius * 0.055);
-    for (let i = -3; i <= 3; i += 1) {
+    const lineGap = radius * 0.22;
+    ctx.lineWidth = Math.max(2, radius * 0.045);
+    for (let i = -4; i <= 4; i += 1) {
+      const offset = i * lineGap;
+
+      ctx.strokeStyle = "rgba(255, 240, 170, 0.26)";
       ctx.beginPath();
-      ctx.moveTo(-radius * 0.48, radius * (i * 0.22 - 0.18));
-      ctx.lineTo(radius * 0.48, radius * (i * 0.22 + 0.22));
+      ctx.moveTo(-radius * 0.62, bodyCenterY + offset - radius * 0.18);
+      ctx.lineTo(radius * 0.62, bodyCenterY + offset + radius * 0.32);
       ctx.stroke();
 
+      ctx.strokeStyle = "rgba(171, 108, 18, 0.48)";
       ctx.beginPath();
-      ctx.moveTo(radius * 0.48, radius * (i * 0.22 - 0.18));
-      ctx.lineTo(-radius * 0.48, radius * (i * 0.22 + 0.22));
+      ctx.moveTo(radius * 0.62, bodyCenterY + offset - radius * 0.18);
+      ctx.lineTo(-radius * 0.62, bodyCenterY + offset + radius * 0.32);
       ctx.stroke();
+    }
+
+    const cellRows = 4;
+    const cellCols = 3;
+    for (let row = 0; row < cellRows; row += 1) {
+      for (let col = 0; col < cellCols; col += 1) {
+        const cx = (col - 1) * radius * 0.26 + (row % 2 === 0 ? 0 : radius * 0.05);
+        const cy = bodyCenterY + (row - 1.5) * radius * 0.28;
+        ctx.fillStyle = "rgba(255, 228, 122, 0.18)";
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - radius * 0.08);
+        ctx.lineTo(cx + radius * 0.08, cy);
+        ctx.lineTo(cx, cy + radius * 0.08);
+        ctx.lineTo(cx - radius * 0.08, cy);
+        ctx.closePath();
+        ctx.fill();
+      }
     }
 
     ctx.restore();
@@ -1367,7 +1420,13 @@ class FruitMergeGame {
    * 更新暂停按钮显示文案。
    */
   updatePauseUI() {
-    this.pauseButton.textContent = this.isPaused ? "继续" : "暂停";
+    this.pauseButton.setAttribute("aria-label", this.isPaused ? "继续游戏" : "暂停游戏");
+    this.pauseButton.setAttribute("title", this.isPaused ? "继续" : "暂停");
+    const icon = this.pauseButton.querySelector(".pause-icon");
+    if (icon) {
+      icon.classList.toggle("is-play", this.isPaused);
+      icon.classList.toggle("is-pause", !this.isPaused);
+    }
   }
 
   /**
