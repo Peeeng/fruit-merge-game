@@ -13,16 +13,16 @@ const {
  * level 表示水果等级，radius 决定碰撞大小，score 表示合成到该水果时增加的分数。
  */
 const FRUITS = [
-  { level: 0, name: "樱桃", radius: 18, color: "#ff6b6b", accent: "#ffd6d6", score: 10 },
-  { level: 1, name: "草莓", radius: 24, color: "#ff5c8a", accent: "#ffd0de", score: 20 },
-  { level: 2, name: "葡萄", radius: 30, color: "#8e5eff", accent: "#ddd2ff", score: 35 },
-  { level: 3, name: "橘子", radius: 36, color: "#ff9f43", accent: "#ffe0ba", score: 55 },
-  { level: 4, name: "柠檬", radius: 42, color: "#ffd93d", accent: "#fff4b3", score: 80 },
-  { level: 5, name: "猕猴桃", radius: 49, color: "#78c850", accent: "#d9f3c5", score: 120 },
-  { level: 6, name: "桃子", radius: 57, color: "#ff9eb5", accent: "#ffe1e8", score: 180 },
-  { level: 7, name: "菠萝", radius: 66, color: "#f7c948", accent: "#fff0b5", score: 260 },
-  { level: 8, name: "椰子", radius: 76, color: "#8d6e63", accent: "#d7c1b9", score: 360 },
-  { level: 9, name: "西瓜", radius: 88, color: "#4caf50", accent: "#d7f3cb", score: 520 }
+  { level: 0, name: "樱桃", radius: 23, color: "#ff6b6b", accent: "#ffd6d6", score: 10 },
+  { level: 1, name: "草莓", radius: 31, color: "#ff5c8a", accent: "#ffd0de", score: 20 },
+  { level: 2, name: "葡萄", radius: 39, color: "#8e5eff", accent: "#ddd2ff", score: 35 },
+  { level: 3, name: "橘子", radius: 47, color: "#ff9f43", accent: "#ffe0ba", score: 55 },
+  { level: 4, name: "柠檬", radius: 55, color: "#ffd93d", accent: "#fff4b3", score: 80 },
+  { level: 5, name: "猕猴桃", radius: 64, color: "#78c850", accent: "#d9f3c5", score: 120 },
+  { level: 6, name: "桃子", radius: 74, color: "#ff9eb5", accent: "#ffe1e8", score: 180 },
+  { level: 7, name: "菠萝", radius: 86, color: "#f7c948", accent: "#fff0b5", score: 260 },
+  { level: 8, name: "椰子", radius: 99, color: "#8d6e63", accent: "#d7c1b9", score: 360 },
+  { level: 9, name: "西瓜", radius: 114, color: "#4caf50", accent: "#d7f3cb", score: 520 }
 ];
 
 /**
@@ -32,8 +32,6 @@ class FruitMergeGame {
   constructor() {
     this.canvas = document.getElementById("gameCanvas");
     this.ctx = this.canvas.getContext("2d");
-    this.nextCanvas = document.getElementById("nextCanvas");
-    this.nextCtx = this.nextCanvas.getContext("2d");
 
     this.gameContainer = document.getElementById("gameContainer");
     this.scoreValue = document.getElementById("scoreValue");
@@ -43,8 +41,6 @@ class FruitMergeGame {
     this.landingMarker = document.getElementById("landingMarker");
     this.dangerLineElement = document.getElementById("dangerLine");
     this.soundButton = document.getElementById("soundButton");
-    this.volumeSlider = document.getElementById("volumeSlider");
-    this.volumeValue = document.getElementById("volumeValue");
     this.pauseButton = document.getElementById("pauseButton");
     this.restartButton = document.getElementById("restartButton");
     this.resumeButton = document.getElementById("resumeButton");
@@ -69,7 +65,6 @@ class FruitMergeGame {
     this.gameOverHoldMs = 1800;
     this.highScoreKey = "fruit-merge-best-score";
     this.soundEnabledKey = "fruit-merge-sound-enabled";
-    this.volumeKey = "fruit-merge-volume";
 
     this.engine = null;
     this.world = null;
@@ -91,6 +86,7 @@ class FruitMergeGame {
     this.lastMergeAt = 0;
     this.lastComboRewardAt = 0;
     this.lastComboRewardStep = 2;
+    this.comboChainWindowMs = 650;
     this.bestScore = this.readBestScore();
     this.nextFruitLevel = 0;
     this.currentDropX = this.width / 2;
@@ -108,11 +104,9 @@ class FruitMergeGame {
     this.musicTimerId = 0;
     this.musicStepIndex = 0;
     this.soundEnabled = this.readSoundEnabled();
-    this.volume = this.readVolume();
 
     this.updateBestScoreText();
     this.updateSoundButtonText();
-    this.updateVolumeUI();
     this.bindEvents();
     this.startNewGame();
   }
@@ -134,7 +128,6 @@ class FruitMergeGame {
       this.soundEnabled = !this.soundEnabled;
       window.localStorage.setItem(this.soundEnabledKey, String(this.soundEnabled));
       this.updateSoundButtonText();
-      this.applyVolume();
 
       if (this.soundEnabled) {
         this.ensureAudioContext();
@@ -145,12 +138,6 @@ class FruitMergeGame {
       }
     });
 
-    this.volumeSlider.addEventListener("input", () => {
-      this.volume = Number(this.volumeSlider.value) / 100;
-      window.localStorage.setItem(this.volumeKey, String(this.volume));
-      this.updateVolumeUI();
-      this.applyVolume();
-    });
 
     this.pauseButton.addEventListener("click", () => {
       if (this.isGameOver) {
@@ -200,6 +187,7 @@ class FruitMergeGame {
     this.lastMergeAt = 0;
     this.lastComboRewardAt = 0;
     this.lastComboRewardStep = 2;
+    this.comboChainWindowMs = 650;
     this.isPaused = false;
     this.isGameOver = false;
     this.canDrop = true;
@@ -215,7 +203,6 @@ class FruitMergeGame {
     this.updateStateText();
     this.updatePauseUI();
     this.updateOverlayVisibility();
-    this.drawNextFruitPreview();
     this.updateDangerLinePosition();
     this.updateDropIndicator();
     this.startBackgroundMusic();
@@ -437,7 +424,6 @@ class FruitMergeGame {
 
     this.nextFruitLevel = this.getRandomStartFruitLevel();
     this.animatePreviewRefresh();
-    this.drawNextFruitPreview();
     this.updateDropIndicator();
   }
 
@@ -548,7 +534,7 @@ class FruitMergeGame {
    */
   registerCombo() {
     const now = performance.now();
-    this.combo = now - this.lastMergeAt < 2200 ? this.combo + 1 : 1;
+    this.combo = now - this.lastMergeAt <= this.comboChainWindowMs ? this.combo + 1 : 1;
     this.lastMergeAt = now;
     this.maxCombo = Math.max(this.maxCombo, this.combo);
     this.updateComboText();
@@ -694,15 +680,6 @@ class FruitMergeGame {
   /**
    * 读取音量设置。
    */
-  readVolume() {
-    const value = Number(window.localStorage.getItem(this.volumeKey));
-    if (!Number.isFinite(value)) {
-      return 0.7;
-    }
-
-    return this.clamp(value, 0, 1);
-  }
-
   /**
    * 持久化最高分。
    */
@@ -1179,32 +1156,14 @@ class FruitMergeGame {
   /**
    * 绘制下一个水果预览。
    */
-  drawNextFruitPreview() {
-    const ctx = this.nextCtx;
-    const width = this.nextCanvas.width;
-    const height = this.nextCanvas.height;
-    ctx.clearRect(0, 0, width, height);
-
-    const fruit = FRUITS[this.nextFruitLevel];
-    const previewRadius = Math.min(fruit.radius, 30);
-    this.drawFruit(ctx, width / 2, height / 2 + 4, 0, {
-      level: fruit.level,
-      radius: previewRadius,
-      color: fruit.color,
-      accent: fruit.accent
-    });
-  }
-
   /**
-   * 下一颗水果切换时做一个短促过渡动画。
+   * 待落水果切换时做一个短促过渡动画。
    */
   animatePreviewRefresh() {
     this.dropPreviewCanvas.style.transform = "translateY(-8px) scale(0.9)";
-    this.nextCanvas.style.transform = "scale(0.88)";
 
     window.setTimeout(() => {
       this.dropPreviewCanvas.style.transform = "translateY(0) scale(1)";
-      this.nextCanvas.style.transform = "scale(1)";
     }, 180);
   }
 
@@ -1212,7 +1171,7 @@ class FruitMergeGame {
    * 更新合成动画生命周期。
    */
   updateEffects() {
-    if (performance.now() - this.lastMergeAt >= 2200 && this.combo !== 1) {
+    if (performance.now() - this.lastMergeAt >= this.comboChainWindowMs && this.combo !== 1) {
       this.combo = 1;
       this.lastComboRewardStep = 2;
       this.comboText.classList.remove("combo-tier-1", "combo-tier-2", "combo-tier-3");
@@ -1428,17 +1387,12 @@ class FruitMergeGame {
   /**
    * 刷新音量滑杆与文本。
    */
-  updateVolumeUI() {
-    this.volumeSlider.value = String(Math.round(this.volume * 100));
-    this.volumeValue.textContent = `${Math.round(this.volume * 100)}%`;
-  }
-
   /**
    * 应用总音量到各个增益节点。
    */
   applyVolume() {
     if (this.masterGain) {
-      this.masterGain.gain.value = this.soundEnabled ? 0.22 * this.volume : 0;
+      this.masterGain.gain.value = this.soundEnabled ? 0.22 : 0;
     }
 
     if (this.musicGain) {

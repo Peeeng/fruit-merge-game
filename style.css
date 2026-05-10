@@ -101,15 +101,13 @@ button {
 
 .status-panel {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   padding: 14px;
   margin-bottom: 14px;
 }
 
-.score-card,
-.next-card,
-.audio-card {
+.score-card {
   background: rgba(255, 255, 255, 0.88);
   border-radius: 18px;
   padding: 14px 12px;
@@ -118,29 +116,6 @@ button {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-}
-
-.volume-control {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-
-#volumeSlider {
-  width: 100%;
-  accent-color: var(--accent-deep);
-}
-
-#volumeValue {
-  font-size: 13px;
-  color: var(--text-light);
-}
-
-.audio-card {
-  grid-column: span 3;
-  min-height: 82px;
 }
 
 .label {
@@ -152,12 +127,6 @@ button {
 .score-card strong {
   font-size: 28px;
   line-height: 1;
-}
-
-#nextCanvas {
-  width: 76px;
-  height: 76px;
-  transition: transform 0.24s ease-out, opacity 0.22s ease-out;
 }
 
 .game-panel {
