@@ -13,16 +13,16 @@ const {
  * level 表示水果等级，radius 决定碰撞大小，score 表示合成到该水果时增加的分数。
  */
 const FRUITS = [
-  { level: 0, name: "樱桃", radius: 30, color: "#ff6b6b", accent: "#ffd6d6", score: 10 },
-  { level: 1, name: "草莓", radius: 40, color: "#ff5c8a", accent: "#ffd0de", score: 20 },
-  { level: 2, name: "葡萄", radius: 51, color: "#8e5eff", accent: "#ddd2ff", score: 35 },
-  { level: 3, name: "橘子", radius: 61, color: "#ff9f43", accent: "#ffe0ba", score: 55 },
-  { level: 4, name: "柠檬", radius: 72, color: "#ffd93d", accent: "#fff4b3", score: 80 },
-  { level: 5, name: "猕猴桃", radius: 83, color: "#78c850", accent: "#d9f3c5", score: 120 },
-  { level: 6, name: "桃子", radius: 96, color: "#ff9eb5", accent: "#ffe1e8", score: 180 },
-  { level: 7, name: "菠萝", radius: 112, color: "#f7c948", accent: "#fff0b5", score: 260 },
-  { level: 8, name: "椰子", radius: 129, color: "#8d6e63", accent: "#d7c1b9", score: 360 },
-  { level: 9, name: "西瓜", radius: 148, color: "#4caf50", accent: "#d7f3cb", score: 520 }
+  { level: 0, name: "樱桃", radius: 26, color: "#ff6b6b", accent: "#ffd6d6", score: 10 },
+  { level: 1, name: "草莓", radius: 34, color: "#ff5c8a", accent: "#ffd0de", score: 20 },
+  { level: 2, name: "葡萄", radius: 43, color: "#8e5eff", accent: "#ddd2ff", score: 35 },
+  { level: 3, name: "橘子", radius: 52, color: "#ff9f43", accent: "#ffe0ba", score: 55 },
+  { level: 4, name: "柠檬", radius: 60, color: "#ffd93d", accent: "#fff4b3", score: 80 },
+  { level: 5, name: "猕猴桃", radius: 68, color: "#78c850", accent: "#d9f3c5", score: 120 },
+  { level: 6, name: "桃子", radius: 76, color: "#ff9eb5", accent: "#ffe1e8", score: 180 },
+  { level: 7, name: "菠萝", radius: 86, color: "#f7c948", accent: "#fff0b5", score: 260 },
+  { level: 8, name: "椰子", radius: 98, color: "#8d6e63", accent: "#d7c1b9", score: 360 },
+  { level: 9, name: "西瓜", radius: 112, color: "#4caf50", accent: "#d7f3cb", score: 520 }
 ];
 
 const UNLOCK_LEVEL_FOR_THIRD_START_FRUIT = 3;
@@ -43,6 +43,9 @@ class FruitMergeGame {
     this.dropPreviewCanvas = document.getElementById("dropPreviewCanvas");
     this.dropPreviewCtx = this.dropPreviewCanvas.getContext("2d");
     this.landingMarker = document.getElementById("landingMarker");
+    this.comboFlash = document.getElementById("comboFlash");
+    this.comboBurst = document.getElementById("comboBurst");
+    this.comboBanner = document.getElementById("comboBanner");
     this.dangerLineElement = document.getElementById("dangerLine");
     this.soundButton = document.getElementById("soundButton");
     this.pauseButton = document.getElementById("pauseButton");
@@ -80,10 +83,11 @@ class FruitMergeGame {
     this.mergeGlowFruitIds = new Set();
     this.mergePairCooldown = new Map();
     this.mergePairCooldownMs = 180;
-    this.contactMergeTolerance = 10;
+    this.contactMergeTolerance = 2;
 
     this.fruits = [];
     this.mergeEffects = [];
+    this.comboParticles = [];
     this.score = 0;
     this.combo = 1;
     this.maxCombo = 1;
@@ -186,6 +190,7 @@ class FruitMergeGame {
 
     this.fruits = [];
     this.mergeEffects = [];
+    this.comboParticles = [];
     this.score = 0;
     this.combo = 1;
     this.maxCombo = 1;
@@ -361,10 +366,10 @@ class FruitMergeGame {
     const fruit = Bodies.circle(x, y, fruitDef.radius, {
       restitution: 0.08,
       friction: 0.015,
-      frictionAir: 0.012,
+      frictionAir: 0.01,
       frictionStatic: 0.65,
       density: 0.0018 + level * 0.00016,
-      slop: 0.04,
+      slop: 0.006,
       sleepThreshold: 50,
       label: `fruit-${level}`
     });
@@ -413,7 +418,7 @@ class FruitMergeGame {
     const level = this.nextFruitLevel;
     const radius = FRUITS[level].radius;
     const dropX = this.clamp(this.currentDropX, radius + 8, this.width - radius - 8);
-    const dropY = this.dangerLineY - radius - 6;
+    const dropY = this.dangerLineY - radius - 14;
 
     this.createFruit(level, dropX, dropY, {
       angle: (Math.random() - 0.5) * 0.08
@@ -717,6 +722,7 @@ class FruitMergeGame {
     }
 
     this.drawMergeEffects();
+    this.drawComboParticles();
     this.mergeGlowFruitIds.clear();
   }
 
@@ -1185,6 +1191,10 @@ class FruitMergeGame {
       this.combo = 1;
       this.lastComboRewardStep = 2;
       this.comboText.classList.remove("combo-tier-1", "combo-tier-2", "combo-tier-3");
+      this.gameContainer.classList.remove("combo-screen-tier-1", "combo-screen-tier-2", "combo-screen-tier-3", "combo-shake-tier-1", "combo-shake-tier-2", "combo-shake-tier-3");
+      this.comboFlash.classList.remove("play-tier-1", "play-tier-2", "play-tier-3");
+      this.comboBurst.classList.remove("play-tier-1", "play-tier-2", "play-tier-3");
+      this.comboBanner.classList.remove("play-tier-1", "play-tier-2", "play-tier-3");
       this.updateComboText();
     }
 
@@ -1192,6 +1202,63 @@ class FruitMergeGame {
       effect.life += 1;
       return effect.life <= effect.maxLife;
     });
+
+    this.comboParticles = this.comboParticles.filter((particle) => {
+      particle.life += 1;
+      particle.x += particle.vx;
+      particle.y += particle.vy;
+      particle.vy += 0.06;
+      particle.rotation += particle.spin;
+      return particle.life <= particle.maxLife;
+    });
+  }
+
+  /**
+   * 绘制连击彩带粒子。
+   */
+  drawComboParticles() {
+    for (const particle of this.comboParticles) {
+      const progress = particle.life / particle.maxLife;
+      const alpha = 1 - progress;
+
+      this.ctx.save();
+      this.ctx.translate(particle.x, particle.y);
+      this.ctx.rotate(particle.rotation);
+      this.ctx.fillStyle = `rgba(${particle.color.r}, ${particle.color.g}, ${particle.color.b}, ${alpha})`;
+      this.ctx.fillRect(-particle.width / 2, -particle.height / 2, particle.width, particle.height);
+      this.ctx.restore();
+    }
+  }
+
+  /**
+   * 生成连击彩带粒子。
+   */
+  spawnComboParticles(tier) {
+    const count = tier === 3 ? 22 : tier === 2 ? 16 : 10;
+    const colors = [
+      { r: 255, g: 149, b: 88 },
+      { r: 255, g: 104, b: 127 },
+      { r: 255, g: 211, b: 92 },
+      { r: 255, g: 255, b: 255 }
+    ];
+
+    for (let index = 0; index < count; index += 1) {
+      const angle = -Math.PI / 2 + (Math.random() - 0.5) * 1.4;
+      const speed = 2.2 + Math.random() * (tier === 3 ? 3.2 : 2.2);
+      this.comboParticles.push({
+        x: this.width / 2 + (Math.random() - 0.5) * 36,
+        y: this.height * 0.34 + (Math.random() - 0.5) * 18,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        width: 8 + Math.random() * 8,
+        height: 4 + Math.random() * 4,
+        rotation: Math.random() * Math.PI,
+        spin: (Math.random() - 0.5) * 0.28,
+        maxLife: 28 + Math.floor(Math.random() * 10),
+        life: 0,
+        color: colors[Math.floor(Math.random() * colors.length)]
+      });
+    }
   }
 
   /**
@@ -1277,7 +1344,7 @@ class FruitMergeGame {
     const x = this.clamp(this.currentDropX, fruit.radius + 8, this.width - fruit.radius - 8);
     const left = (x / this.width) * 100;
     const visible = this.isPointerActive && !this.isGameOver;
-    const dropCenterY = this.dangerLineY - fruit.radius - 6;
+    const dropCenterY = this.dangerLineY - fruit.radius - 14;
     const previewPadding = 24;
     const previewSize = fruit.radius * 2 + previewPadding;
     const previewTop = dropCenterY - previewSize / 2;
@@ -1379,6 +1446,42 @@ class FruitMergeGame {
     void this.comboText.offsetWidth;
     this.comboText.classList.add(className);
   }
+
+  /**
+   * 连击时触发屏幕级反馈特效。
+   */
+  playComboScreenEffect(rewardStep) {
+    const tier = rewardStep >= 5 ? 3 : rewardStep >= 4 ? 2 : 1;
+    const tierClass = `play-tier-${tier}`;
+    const screenTierClass = `combo-screen-tier-${tier}`;
+    const shakeClass = `combo-shake-tier-${tier}`;
+    const bannerText = tier === 1 ? "GOOD" : tier === 2 ? "GREAT" : "PERFECT";
+
+    this.comboBanner.textContent = bannerText;
+    this.gameContainer.classList.remove("combo-screen-tier-1", "combo-screen-tier-2", "combo-screen-tier-3", "combo-shake-tier-1", "combo-shake-tier-2", "combo-shake-tier-3");
+    this.comboFlash.classList.remove("play-tier-1", "play-tier-2", "play-tier-3");
+    this.comboBurst.classList.remove("play-tier-1", "play-tier-2", "play-tier-3");
+    this.comboBanner.classList.remove("play-tier-1", "play-tier-2", "play-tier-3");
+
+    void this.comboFlash.offsetWidth;
+
+    this.gameContainer.classList.add(screenTierClass, shakeClass);
+    this.comboFlash.classList.add(tierClass);
+    this.comboBurst.classList.add(tierClass);
+    this.comboBanner.classList.add(tierClass);
+    this.spawnComboParticles(tier);
+
+    window.setTimeout(() => {
+      this.gameContainer.classList.remove(screenTierClass, shakeClass);
+      this.comboFlash.classList.remove(tierClass);
+      this.comboBurst.classList.remove(tierClass);
+      this.comboBanner.classList.remove(tierClass);
+    }, tier === 3 ? 980 : tier === 2 ? 860 : 740);
+  }
+
+  /**
+   * 刷新最高分字段。
+   */
 
   /**
    * 刷新最高分字段。
@@ -1625,6 +1728,7 @@ class FruitMergeGame {
     this.lastComboRewardAt = now;
     this.lastComboRewardStep = rewardStep;
     this.animateComboText(rewardStep);
+    this.playComboScreenEffect(rewardStep);
     this.playComboRewardSound(audioContext, rewardStep, level);
   }
 
@@ -1992,6 +2096,7 @@ class FruitMergeGame {
 
     this.fruits = [];
     this.mergeEffects = [];
+    this.comboParticles = [];
   }
 
   /**
