@@ -13,17 +13,21 @@ const {
  * level 表示水果等级，radius 决定碰撞大小，score 表示合成到该水果时增加的分数。
  */
 const FRUITS = [
-  { level: 0, name: "樱桃", radius: 23, color: "#ff6b6b", accent: "#ffd6d6", score: 10 },
-  { level: 1, name: "草莓", radius: 31, color: "#ff5c8a", accent: "#ffd0de", score: 20 },
-  { level: 2, name: "葡萄", radius: 39, color: "#8e5eff", accent: "#ddd2ff", score: 35 },
-  { level: 3, name: "橘子", radius: 47, color: "#ff9f43", accent: "#ffe0ba", score: 55 },
-  { level: 4, name: "柠檬", radius: 55, color: "#ffd93d", accent: "#fff4b3", score: 80 },
-  { level: 5, name: "猕猴桃", radius: 64, color: "#78c850", accent: "#d9f3c5", score: 120 },
-  { level: 6, name: "桃子", radius: 74, color: "#ff9eb5", accent: "#ffe1e8", score: 180 },
-  { level: 7, name: "菠萝", radius: 86, color: "#f7c948", accent: "#fff0b5", score: 260 },
-  { level: 8, name: "椰子", radius: 99, color: "#8d6e63", accent: "#d7c1b9", score: 360 },
-  { level: 9, name: "西瓜", radius: 114, color: "#4caf50", accent: "#d7f3cb", score: 520 }
+  { level: 0, name: "樱桃", radius: 30, color: "#ff6b6b", accent: "#ffd6d6", score: 10 },
+  { level: 1, name: "草莓", radius: 40, color: "#ff5c8a", accent: "#ffd0de", score: 20 },
+  { level: 2, name: "葡萄", radius: 51, color: "#8e5eff", accent: "#ddd2ff", score: 35 },
+  { level: 3, name: "橘子", radius: 61, color: "#ff9f43", accent: "#ffe0ba", score: 55 },
+  { level: 4, name: "柠檬", radius: 72, color: "#ffd93d", accent: "#fff4b3", score: 80 },
+  { level: 5, name: "猕猴桃", radius: 83, color: "#78c850", accent: "#d9f3c5", score: 120 },
+  { level: 6, name: "桃子", radius: 96, color: "#ff9eb5", accent: "#ffe1e8", score: 180 },
+  { level: 7, name: "菠萝", radius: 112, color: "#f7c948", accent: "#fff0b5", score: 260 },
+  { level: 8, name: "椰子", radius: 129, color: "#8d6e63", accent: "#d7c1b9", score: 360 },
+  { level: 9, name: "西瓜", radius: 148, color: "#4caf50", accent: "#d7f3cb", score: 520 }
 ];
+
+const UNLOCK_LEVEL_FOR_THIRD_START_FRUIT = 3;
+const FLOOR_VISIBLE_MARGIN = 22;
+
 
 /**
  * 游戏主类，负责 Matter 世界、输入处理、渲染和状态管理。
@@ -89,6 +93,7 @@ class FruitMergeGame {
     this.comboChainWindowMs = 650;
     this.bestScore = this.readBestScore();
     this.nextFruitLevel = 0;
+    this.highestUnlockedLevel = 1;
     this.currentDropX = this.width / 2;
     this.canDrop = true;
     this.isPaused = false;
@@ -225,7 +230,7 @@ class FruitMergeGame {
 
     const floor = Bodies.rectangle(
       this.width / 2,
-      this.height + this.wallThickness / 2,
+      this.height - FLOOR_VISIBLE_MARGIN + this.wallThickness / 2,
       this.width,
       this.wallThickness,
       staticOptions
@@ -460,6 +465,10 @@ class FruitMergeGame {
       angle: (Math.random() - 0.5) * 0.12
     });
 
+    if (nextLevel >= UNLOCK_LEVEL_FOR_THIRD_START_FRUIT) {
+      this.highestUnlockedLevel = Math.max(this.highestUnlockedLevel, 2);
+    }
+
     this.addMergeEffect(centerX, centerY, FRUITS[nextLevel].radius);
     this.registerCombo();
     this.addScore(FRUITS[nextLevel].score * this.combo);
@@ -534,7 +543,8 @@ class FruitMergeGame {
    */
   registerCombo() {
     const now = performance.now();
-    this.combo = now - this.lastMergeAt <= this.comboChainWindowMs ? this.combo + 1 : 1;
+    const recentMerge = now - this.lastMergeAt <= this.comboChainWindowMs;
+    this.combo = recentMerge ? this.combo + 1 : 1;
     this.lastMergeAt = now;
     this.maxCombo = Math.max(this.maxCombo, this.combo);
     this.updateComboText();
@@ -1385,9 +1395,6 @@ class FruitMergeGame {
   }
 
   /**
-   * 刷新音量滑杆与文本。
-   */
-  /**
    * 应用总音量到各个增益节点。
    */
   applyVolume() {
@@ -1405,7 +1412,10 @@ class FruitMergeGame {
    * 生成较低等级水果，保证开局和前期节奏更自然。
    */
   getRandomStartFruitLevel() {
-    return Math.random() < 0.7 ? 0 : 1;
+    const pool = this.highestUnlockedLevel >= 2
+      ? [0, 0, 1, 1, 2]
+      : [0, 0, 0, 1];
+    return pool[Math.floor(Math.random() * pool.length)];
   }
 
   /**
