@@ -59,8 +59,8 @@ class FruitMergeGame {
     this.width = this.canvas.width;
     this.height = this.canvas.height;
     this.wallThickness = 80;
-    this.dangerLineY = 120;
-    this.dropOffsetAboveDangerLine = 24;
+    this.dangerLineY = 142;
+    this.dropOffsetAboveDangerLine = 18;
     this.dropY = this.dangerLineY - this.dropOffsetAboveDangerLine;
     this.maxBodies = 80;
     this.maxEffects = 18;
