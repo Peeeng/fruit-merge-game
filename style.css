@@ -23,6 +23,325 @@ body {
   color: var(--text-main);
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.page,
+.game-shell,
+.status-panel,
+.game-panel,
+.game-container,
+.score-card,
+.icon-button,
+.control-button,
+.overlay,
+.overlay-card {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+canvas {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+button,
+strong,
+span,
+div,
+p,
+h1,
+h2 {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+* {
+  -webkit-touch-callout: none;
+}
+
+body {
+  -webkit-text-size-adjust: 100%;
+}
+
+button {
+  touch-action: manipulation;
+}
+
+.game-container,
+canvas,
+button {
+  -webkit-user-drag: none;
+}
+
+::selection {
+  background: transparent;
+}
+
+::-moz-selection {
+  background: transparent;
+}
+
+input,
+textarea {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+html,
+body,
+.page,
+.game-shell {
+  overscroll-behavior: contain;
+}
+
+img,
+canvas,
+button,
+span,
+strong,
+div,
+p,
+h1,
+h2 {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body,
+.page,
+.game-shell,
+.game-container {
+  caret-color: transparent;
+}
+
+html {
+  scroll-behavior: auto;
+}
+
+body {
+  cursor: default;
+}
+
+button {
+  cursor: pointer;
+}
+
+canvas {
+  outline: none;
+}
+
+.game-container {
+  touch-action: none;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+}
+
+html {
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  -webkit-overflow-scrolling: touch;
+}
+
+button,
+canvas,
+.game-container {
+  outline: none;
+}
+
+body {
+  text-rendering: optimizeLegibility;
+}
+
+html,
+body {
+  -ms-user-select: none;
+}
+
+input,
+textarea {
+  -ms-user-select: text;
+}
+
+body {
+  -webkit-touch-callout: none;
+}
+
+html,
+body {
+  -webkit-highlight: none;
+}
+
+button {
+  -webkit-touch-callout: none;
+}
+
+canvas {
+  -webkit-touch-callout: none;
+}
+
+html,
+body {
+  -moz-user-select: none;
+}
+
+input,
+textarea {
+  -moz-user-select: text;
+}
+
+body {
+  position: relative;
+}
+
+.page {
+  position: relative;
+}
+
+.game-shell {
+  position: relative;
+}
+
+.game-container {
+  position: relative;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+html,
+body {
+  max-width: 100%;
+}
+
+body {
+  touch-action: manipulation;
+}
+
+.page,
+.game-shell,
+.game-container {
+  touch-action: manipulation;
+}
+
+body {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+canvas,
+.game-container,
+.overlay,
+.overlay-card {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  user-modify: read-only;
+  -webkit-user-modify: read-only;
+}
+
+input,
+textarea {
+  user-modify: read-write;
+  -webkit-user-modify: read-write;
+}
+
+body {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+button,
+canvas,
+span,
+strong,
+div,
+p,
+h1,
+h2 {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+input,
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+body {
+  -webkit-touch-callout: none;
+}
+
+html,
+body {
+  -webkit-user-drag: none;
+}
+
+button,
+canvas {
+  -webkit-user-drag: none;
+}
+
+body {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  overscroll-behavior-y: contain;
+}
+
+body {
+  margin: 0;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+}
+
+button {
+  font: inherit;
+}
+
+.page {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 20px 12px 28px;
+}
+
+.game-shell {
+  width: min(100%, 520px);
+}
+
+.status-panel,
+.game-panel {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+}
+
+.status-panel {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 10px 48px 10px 10px;
+  margin-bottom: 10px;
 }
 
 body {
@@ -867,16 +1186,16 @@ button {
   position: relative;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-  padding: 10px 48px 10px 10px;
+  gap: 10px;
+  padding: 12px 50px 12px 12px;
   margin-bottom: 10px;
 }
 
 .score-card {
   background: rgba(255, 255, 255, 0.88);
   border-radius: 16px;
-  padding: 8px 8px;
-  min-height: 62px;
+  padding: 10px 8px;
+  min-height: 72px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -886,12 +1205,12 @@ button {
 .label {
   font-size: 13px;
   color: var(--text-light);
-  margin-bottom: 6px;
+  margin-bottom: 7px;
   white-space: nowrap;
 }
 
 .score-card strong {
-  font-size: 24px;
+  font-size: 30px;
   line-height: 1;
 }
 
