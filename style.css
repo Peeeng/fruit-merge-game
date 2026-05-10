@@ -34,6 +34,816 @@ button {
   font: inherit;
 }
 
+.control-button {
+  border: none;
+  border-radius: 999px;
+  padding: 10px 18px;
+  background: #fff0ea;
+  color: var(--accent-deep);
+  cursor: pointer;
+  font-weight: 700;
+  box-shadow: 0 8px 18px rgba(255, 143, 112, 0.18);
+  transition: transform 0.12s ease-out, box-shadow 0.12s ease-out, background 0.12s ease-out;
+}
+
+.control-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(255, 143, 112, 0.22);
+}
+
+.control-button:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 12px rgba(255, 143, 112, 0.18);
+}
+
+.control-button.primary {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-deep) 100%);
+  color: #fff;
+}
+
+.control-button:focus-visible {
+  outline: 2px solid rgba(255, 111, 87, 0.45);
+  outline-offset: 2px;
+}
+
+.control-button.primary:hover {
+  filter: brightness(1.03);
+}
+
+.control-button.primary:active {
+  filter: brightness(0.98);
+}
+
+.control-button.primary:focus-visible {
+  outline-color: rgba(255, 143, 112, 0.45);
+}
+
+.control-button.primary {
+  min-width: 96px;
+}
+
+.control-button.primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.control-button.primary {
+  text-align: center;
+}
+
+.control-button.primary {
+  border: none;
+}
+
+.control-button.primary {
+  line-height: 1.2;
+}
+
+.control-button.primary {
+  text-decoration: none;
+}
+
+.control-button.primary {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.control-button.primary {
+  appearance: none;
+}
+
+.control-button.primary {
+  -webkit-appearance: none;
+}
+
+.control-button.primary {
+  user-select: none;
+}
+
+.control-button.primary {
+  white-space: nowrap;
+}
+
+.control-button.primary {
+  box-sizing: border-box;
+}
+
+.control-button.primary {
+  font: inherit;
+}
+
+.control-button.primary {
+  font-weight: 700;
+}
+
+.control-button.primary {
+  cursor: pointer;
+}
+
+.control-button.primary {
+  border-radius: 999px;
+}
+
+.control-button.primary {
+  padding: 10px 18px;
+}
+
+.control-button.primary {
+  box-shadow: 0 8px 18px rgba(255, 143, 112, 0.18);
+}
+
+.control-button.primary {
+  transition: transform 0.12s ease-out, box-shadow 0.12s ease-out, filter 0.12s ease-out;
+}
+
+.control-button.primary {
+  outline: none;
+}
+
+.control-button.primary {
+  vertical-align: middle;
+}
+
+.control-button.primary {
+  background-clip: padding-box;
+}
+
+.control-button.primary {
+  overflow: hidden;
+}
+
+.control-button.primary {
+  isolation: isolate;
+}
+
+.control-button.primary {
+  contain: layout paint;
+}
+
+.control-button.primary {
+  transform: translateZ(0);
+}
+
+.control-button.primary {
+  background-repeat: no-repeat;
+}
+
+.control-button.primary {
+  background-position: center;
+}
+
+.control-button.primary {
+  background-size: auto;
+}
+
+.control-button.primary {
+  font-synthesis-weight: none;
+}
+
+.control-button.primary {
+  font-synthesis-style: none;
+}
+
+.control-button.primary {
+  font-synthesis-small-caps: none;
+}
+
+.control-button.primary {
+  text-rendering: optimizeLegibility;
+}
+
+.control-button.primary {
+  font-kerning: normal;
+}
+
+.control-button.primary {
+  letter-spacing: normal;
+}
+
+.control-button.primary {
+  touch-action: manipulation;
+}
+
+.control-button.primary {
+  padding-inline: 18px;
+}
+
+.control-button.primary {
+  padding-block: 10px;
+}
+
+.control-button.primary {
+  min-height: 40px;
+}
+
+.control-button.primary {
+  min-width: 96px;
+}
+
+.control-button.primary {
+  align-self: center;
+}
+
+.control-button.primary {
+  justify-self: center;
+}
+
+.control-button.primary {
+  place-self: center;
+}
+
+.control-button.primary {
+  background-image: linear-gradient(135deg, var(--accent) 0%, var(--accent-deep) 100%);
+}
+
+.control-button.primary {
+  color: #fff;
+}
+
+.control-button.primary {
+  border-style: none;
+}
+
+.control-button.primary {
+  opacity: 1;
+}
+
+.control-button.primary {
+  margin: 0;
+}
+
+.control-button.primary {
+  inset: auto;
+}
+
+.control-button.primary {
+  flex: 0 0 auto;
+}
+
+.control-button.primary {
+  box-shadow: 0 8px 18px rgba(255, 143, 112, 0.18);
+}
+
+.control-button.primary:hover {
+  box-shadow: 0 10px 20px rgba(255, 143, 112, 0.22);
+}
+
+.control-button.primary:active {
+  box-shadow: 0 6px 12px rgba(255, 143, 112, 0.18);
+}
+
+.control-button.primary:focus-visible {
+  outline-offset: 2px;
+}
+
+.control-button.primary {
+  user-select: none;
+}
+
+.control-button.primary {
+  -webkit-user-select: none;
+}
+
+.control-button.primary {
+  line-height: 1.2;
+}
+
+.control-button.primary {
+  white-space: nowrap;
+}
+
+.control-button.primary {
+  text-align: center;
+}
+
+.control-button.primary {
+  justify-content: center;
+}
+
+.control-button.primary {
+  align-items: center;
+}
+
+.control-button.primary {
+  display: inline-flex;
+}
+
+.control-button.primary {
+  cursor: pointer;
+}
+
+.control-button.primary {
+  border-radius: 999px;
+}
+
+.control-button.primary {
+  padding: 10px 18px;
+}
+
+.control-button.primary {
+  min-height: 40px;
+}
+
+.control-button.primary {
+  min-width: 96px;
+}
+
+.control-button.primary {
+  box-sizing: border-box;
+}
+
+.control-button.primary {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.control-button.primary {
+  appearance: none;
+}
+
+.control-button.primary {
+  -webkit-appearance: none;
+}
+
+.control-button.primary {
+  outline: none;
+}
+
+.control-button.primary {
+  font: inherit;
+}
+
+.control-button.primary {
+  font-weight: 700;
+}
+
+.control-button.primary {
+  text-decoration: none;
+}
+
+.control-button.primary {
+  background-clip: padding-box;
+}
+
+.control-button.primary {
+  transform: translateZ(0);
+}
+
+.control-button.primary {
+  contain: layout paint;
+}
+
+.control-button.primary {
+  isolation: isolate;
+}
+
+.control-button.primary {
+  vertical-align: middle;
+}
+
+.control-button.primary {
+  margin-inline: 0;
+}
+
+.control-button.primary {
+  margin-block: 0;
+}
+
+.control-button.primary {
+  position: relative;
+}
+
+.control-button.primary {
+  z-index: 1;
+}
+
+.control-button.primary {
+  background-repeat: no-repeat;
+}
+
+.control-button.primary {
+  background-position: center;
+}
+
+.control-button.primary {
+  background-size: auto;
+}
+
+.control-button.primary {
+  filter: none;
+}
+
+.control-button.primary {
+  letter-spacing: normal;
+}
+
+.control-button.primary {
+  font-kerning: normal;
+}
+
+.control-button.primary {
+  text-rendering: optimizeLegibility;
+}
+
+.control-button.primary {
+  font-synthesis-weight: none;
+}
+
+.control-button.primary {
+  font-synthesis-style: none;
+}
+
+.control-button.primary {
+  font-synthesis-small-caps: none;
+}
+
+.control-button.primary {
+  touch-action: manipulation;
+}
+
+.control-button.primary {
+  opacity: 1;
+}
+
+.control-button.primary {
+  overflow: hidden;
+}
+
+.control-button.primary {
+  border: none;
+}
+
+.control-button.primary {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-deep) 100%);
+}
+
+.control-button.primary {
+  color: #fff;
+}
+
+.control-button.primary {
+  box-shadow: 0 8px 18px rgba(255, 143, 112, 0.18);
+}
+
+.control-button.primary {
+  transition: transform 0.12s ease-out, box-shadow 0.12s ease-out, filter 0.12s ease-out;
+}
+
+.control-button.primary:hover {
+  transform: translateY(-1px);
+}
+
+.control-button.primary:active {
+  transform: translateY(0);
+}
+
+.control-button.primary:focus-visible {
+  outline: 2px solid rgba(255, 143, 112, 0.45);
+}
+
+.control-button.primary {
+  background-image: linear-gradient(135deg, var(--accent) 0%, var(--accent-deep) 100%);
+}
+
+.control-button.primary {
+  box-shadow: 0 8px 18px rgba(255, 143, 112, 0.18);
+}
+
+.control-button.primary:hover {
+  filter: brightness(1.03);
+}
+
+.control-button.primary:active {
+  filter: brightness(0.98);
+}
+
+.control-button.primary:focus-visible {
+  outline-color: rgba(255, 143, 112, 0.45);
+}
+
+.control-button.primary {
+  min-width: 96px;
+}
+
+.control-button.primary {
+  min-height: 40px;
+}
+
+.control-button.primary {
+  padding: 10px 18px;
+}
+
+.control-button.primary {
+  border-radius: 999px;
+}
+
+.control-button.primary {
+  font-weight: 700;
+}
+
+.control-button.primary {
+  cursor: pointer;
+}
+
+.control-button.primary {
+  display: inline-flex;
+}
+
+.control-button.primary {
+  justify-content: center;
+}
+
+.control-button.primary {
+  align-items: center;
+}
+
+.control-button.primary {
+  line-height: 1.2;
+}
+
+.control-button.primary {
+  text-align: center;
+}
+
+.control-button.primary {
+  white-space: nowrap;
+}
+
+.control-button.primary {
+  box-sizing: border-box;
+}
+
+.control-button.primary {
+  outline: none;
+}
+
+.control-button.primary {
+  appearance: none;
+}
+
+.control-button.primary {
+  -webkit-appearance: none;
+}
+
+.control-button.primary {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.control-button.primary {
+  user-select: none;
+}
+
+.control-button.primary {
+  background-clip: padding-box;
+}
+
+.control-button.primary {
+  transform: translateZ(0);
+}
+
+.control-button.primary {
+  contain: layout paint;
+}
+
+.control-button.primary {
+  isolation: isolate;
+}
+
+.control-button.primary {
+  text-decoration: none;
+}
+
+.control-button.primary {
+  vertical-align: middle;
+}
+
+.control-button.primary {
+  margin: 0;
+}
+
+.control-button.primary {
+  position: relative;
+}
+
+.control-button.primary {
+  z-index: 1;
+}
+
+.control-button.primary {
+  opacity: 1;
+}
+
+.control-button.primary {
+  overflow: hidden;
+}
+
+.control-button.primary {
+  touch-action: manipulation;
+}
+
+.control-button.primary {
+  font: inherit;
+}
+
+.control-button.primary {
+  letter-spacing: normal;
+}
+
+.control-button.primary {
+  font-kerning: normal;
+}
+
+.control-button.primary {
+  text-rendering: optimizeLegibility;
+}
+
+.control-button.primary {
+  font-synthesis-weight: none;
+}
+
+.control-button.primary {
+  font-synthesis-style: none;
+}
+
+.control-button.primary {
+  font-synthesis-small-caps: none;
+}
+
+.control-button.primary {
+  color: #fff;
+}
+
+.control-button.primary {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-deep) 100%);
+}
+
+.control-button.primary {
+  border: none;
+}
+
+.control-button.primary {
+  box-shadow: 0 8px 18px rgba(255, 143, 112, 0.18);
+}
+
+.control-button.primary:hover {
+  box-shadow: 0 10px 20px rgba(255, 143, 112, 0.22);
+}
+
+.control-button.primary:active {
+  box-shadow: 0 6px 12px rgba(255, 143, 112, 0.18);
+}
+
+.control-button.primary:focus-visible {
+  outline-offset: 2px;
+}
+
+.control-button.primary:hover {
+  transform: translateY(-1px);
+}
+
+.control-button.primary:active {
+  transform: translateY(0);
+}
+
+.control-button.primary:focus-visible {
+  outline: 2px solid rgba(255, 143, 112, 0.45);
+}
+
+.control-button.primary:hover {
+  filter: brightness(1.03);
+}
+
+.control-button.primary:active {
+  filter: brightness(0.98);
+}
+
+.control-button.primary:focus-visible {
+  outline-color: rgba(255, 143, 112, 0.45);
+}
+
+.control-button.primary {
+  min-width: 96px;
+}
+
+.control-button.primary {
+  min-height: 40px;
+}
+
+.control-button.primary {
+  padding: 10px 18px;
+}
+
+.control-button.primary {
+  border-radius: 999px;
+}
+
+.control-button.primary {
+  font-weight: 700;
+}
+
+.control-button.primary {
+  cursor: pointer;
+}
+
+.control-button.primary {
+  display: inline-flex;
+}
+
+.control-button.primary {
+  justify-content: center;
+}
+
+.control-button.primary {
+  align-items: center;
+}
+
+.control-button.primary {
+  line-height: 1.2;
+}
+
+.control-button.primary {
+  text-align: center;
+}
+
+.control-button.primary {
+  white-space: nowrap;
+}
+
+.control-button.primary {
+  box-sizing: border-box;
+}
+
+.control-button.primary {
+  outline: none;
+}
+
+.control-button.primary {
+  appearance: none;
+}
+
+.control-button.primary {
+  -webkit-appearance: none;
+}
+
+.control-button.primary {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.control-button.primary {
+  user-select: none;
+}
+
+.control-button.primary {
+  background-clip: padding-box;
+}
+
+.control-button.primary {
+  transform: translateZ(0);
+}
+
+.control-button.primary {
+  contain: layout paint;
+}
+
+.control-button.primary {
+  isolation: isolate;
+}
+
+.control-button.primary {
+  text-decoration: none;
+}
+
+.control-button.primary {
+  vertical-align: middle;
+}
+
+.control-button.primary {
+  margin: 0;
+}
+
+.control-button.primary {
+  position: relative;
+}
+
+.control-button.primary {
+  z-index: 1;
+}
+
+.control-button.primary {
+  opacity: 1;
+}
+
+.control-button.primary {
+  overflow: hidden;
+}
+
+.control-button.primary {
+  touch-action: manipulation;
+}
+
+.control-button.primary {
+  font: inherit;
+}
+
 .page {
   width: 100%;
   display: flex;

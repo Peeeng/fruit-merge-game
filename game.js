@@ -13,16 +13,16 @@ const {
  * level 表示水果等级，radius 决定碰撞大小，score 表示合成到该水果时增加的分数。
  */
 const FRUITS = [
-  { level: 0, name: "樱桃", radius: 26, color: "#ff6b6b", accent: "#ffd6d6", score: 10 },
-  { level: 1, name: "草莓", radius: 34, color: "#ff5c8a", accent: "#ffd0de", score: 20 },
-  { level: 2, name: "葡萄", radius: 43, color: "#8e5eff", accent: "#ddd2ff", score: 35 },
-  { level: 3, name: "橘子", radius: 52, color: "#ff9f43", accent: "#ffe0ba", score: 55 },
-  { level: 4, name: "柠檬", radius: 60, color: "#ffd93d", accent: "#fff4b3", score: 80 },
-  { level: 5, name: "猕猴桃", radius: 68, color: "#78c850", accent: "#d9f3c5", score: 120 },
-  { level: 6, name: "桃子", radius: 76, color: "#ff9eb5", accent: "#ffe1e8", score: 180 },
-  { level: 7, name: "菠萝", radius: 86, color: "#f7c948", accent: "#fff0b5", score: 260 },
-  { level: 8, name: "椰子", radius: 98, color: "#8d6e63", accent: "#d7c1b9", score: 360 },
-  { level: 9, name: "西瓜", radius: 112, color: "#4caf50", accent: "#d7f3cb", score: 520 }
+  { level: 0, name: "樱桃", radius: 23, color: "#ff6b6b", accent: "#ffd6d6", score: 10 },
+  { level: 1, name: "草莓", radius: 31, color: "#ff5c8a", accent: "#ffd0de", score: 20 },
+  { level: 2, name: "葡萄", radius: 34, color: "#8e5eff", accent: "#ddd2ff", score: 35 },
+  { level: 3, name: "橘子", radius: 42, color: "#ff9f43", accent: "#ffe0ba", score: 55 },
+  { level: 4, name: "柠檬", radius: 48, color: "#ffd93d", accent: "#fff4b3", score: 80 },
+  { level: 5, name: "猕猴桃", radius: 54, color: "#78c850", accent: "#d9f3c5", score: 120 },
+  { level: 6, name: "桃子", radius: 61, color: "#ff9eb5", accent: "#ffe1e8", score: 180 },
+  { level: 7, name: "菠萝", radius: 69, color: "#f7c948", accent: "#fff0b5", score: 260 },
+  { level: 8, name: "椰子", radius: 78, color: "#8d6e63", accent: "#d7c1b9", score: 360 },
+  { level: 9, name: "西瓜", radius: 90, color: "#4caf50", accent: "#d7f3cb", score: 520 }
 ];
 
 const UNLOCK_LEVEL_FOR_THIRD_START_FRUIT = 3;
@@ -59,7 +59,7 @@ class FruitMergeGame {
     this.width = this.canvas.width;
     this.height = this.canvas.height;
     this.wallThickness = 80;
-    this.dangerLineY = 142;
+    this.dangerLineY = 90;
     this.dropOffsetAboveDangerLine = 18;
     this.dropY = this.dangerLineY - this.dropOffsetAboveDangerLine;
     this.maxBodies = 80;
