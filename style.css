@@ -46,7 +46,6 @@ button {
   width: min(100%, 520px);
 }
 
-.topbar,
 .status-panel,
 .game-panel {
   background: var(--panel);
@@ -55,32 +54,20 @@ button {
   box-shadow: var(--shadow);
 }
 
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  padding: 18px 20px;
-  margin-bottom: 14px;
-}
-
-.title {
-  margin: 0;
-  font-size: 28px;
-  line-height: 1.2;
-}
-
-.subtitle {
-  margin: 6px 0 0;
-  font-size: 14px;
-  color: var(--text-light);
-}
-
 .actions {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
   justify-content: flex-end;
+}
+
+.actions.compact {
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+.actions.compact .control-button {
+  padding: 10px 16px;
 }
 
 .control-button {
@@ -107,11 +94,15 @@ button {
   margin-bottom: 14px;
 }
 
+.status-panel.compact-stats {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .score-card {
   background: rgba(255, 255, 255, 0.88);
   border-radius: 18px;
-  padding: 14px 12px;
-  min-height: 100px;
+  padding: 12px 10px;
+  min-height: 84px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -142,60 +133,72 @@ button {
   font-size: 14px;
 }
 
-.guide-text {
-  color: var(--text-light);
-}
-
 .guide-state {
   font-weight: 700;
   color: var(--accent-deep);
 }
 
-.combo-text {
-  font-weight: 700;
-  color: #ff8a4c;
-  background: rgba(255, 244, 227, 0.9);
-  padding: 4px 10px;
-  border-radius: 999px;
-  transform-origin: center;
+.compact-guide {
+  justify-content: flex-end;
+  margin-bottom: 10px;
 }
 
-.combo-text.combo-tier-1 {
-  color: #ff8a4c;
-  background: rgba(255, 244, 227, 0.92);
-  animation: combo-pop-1 0.34s ease;
+.compact-guide .control-button {
+  padding: 10px 16px;
 }
 
-.combo-text.combo-tier-2 {
-  color: #ff6d57;
-  background: rgba(255, 232, 223, 0.96);
-  animation: combo-pop-2 0.42s ease;
+.compact-stats .score-card strong {
+  font-size: 24px;
 }
 
-.combo-text.combo-tier-3 {
-  color: #ffffff;
-  background: linear-gradient(135deg, #ff8a4c 0%, #ff5d7b 100%);
-  animation: combo-pop-3 0.52s ease;
-  box-shadow: 0 10px 18px rgba(255, 109, 87, 0.28);
+.compact-stats .label {
+  margin-bottom: 6px;
 }
 
-@keyframes combo-pop-1 {
-  0% { transform: scale(1); }
-  35% { transform: scale(1.16); }
-  100% { transform: scale(1); }
+.compact-stats .score-card {
+  min-height: 78px;
 }
 
-@keyframes combo-pop-2 {
-  0% { transform: scale(1) translateY(0); }
-  30% { transform: scale(1.22) translateY(-2px); }
-  100% { transform: scale(1) translateY(0); }
+@media (max-width: 640px) {
+  .title-row {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .status-panel.compact-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .compact-stats .score-card strong {
+    font-size: 20px;
+  }
+
+  .actions.compact {
+    gap: 8px;
+  }
+
+  .actions.compact .control-button {
+    padding: 9px 14px;
+  }
 }
 
-@keyframes combo-pop-3 {
-  0% { transform: scale(1) translateY(0); }
-  25% { transform: scale(1.28) translateY(-3px); }
-  55% { transform: scale(1.14) translateY(-1px); }
-  100% { transform: scale(1) translateY(0); }
+@media (max-width: 420px) {
+  .title {
+    font-size: 24px;
+  }
+
+  .status-panel.compact-stats {
+    gap: 8px;
+  }
+
+  .compact-stats .score-card {
+    min-height: 72px;
+    padding: 10px 8px;
+  }
+
+  .compact-stats .score-card strong {
+    font-size: 18px;
+  }
 }
 
 
