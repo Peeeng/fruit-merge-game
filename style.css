@@ -187,7 +187,47 @@ button {
   background: rgba(255, 244, 227, 0.9);
   padding: 4px 10px;
   border-radius: 999px;
+  transform-origin: center;
 }
+
+.combo-text.combo-tier-1 {
+  color: #ff8a4c;
+  background: rgba(255, 244, 227, 0.92);
+  animation: combo-pop-1 0.34s ease;
+}
+
+.combo-text.combo-tier-2 {
+  color: #ff6d57;
+  background: rgba(255, 232, 223, 0.96);
+  animation: combo-pop-2 0.42s ease;
+}
+
+.combo-text.combo-tier-3 {
+  color: #ffffff;
+  background: linear-gradient(135deg, #ff8a4c 0%, #ff5d7b 100%);
+  animation: combo-pop-3 0.52s ease;
+  box-shadow: 0 10px 18px rgba(255, 109, 87, 0.28);
+}
+
+@keyframes combo-pop-1 {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.16); }
+  100% { transform: scale(1); }
+}
+
+@keyframes combo-pop-2 {
+  0% { transform: scale(1) translateY(0); }
+  30% { transform: scale(1.22) translateY(-2px); }
+  100% { transform: scale(1) translateY(0); }
+}
+
+@keyframes combo-pop-3 {
+  0% { transform: scale(1) translateY(0); }
+  25% { transform: scale(1.28) translateY(-3px); }
+  55% { transform: scale(1.14) translateY(-1px); }
+  100% { transform: scale(1) translateY(0); }
+}
+
 
 .game-container {
   position: relative;

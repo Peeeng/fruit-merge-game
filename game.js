@@ -104,12 +104,6 @@ class FruitMergeGame {
     this.audioContext = null;
     this.masterGain = null;
     this.musicGain = null;
-    this.announcerAudioMap = this.createAnnouncerAudioMap();
-    this.lastAnnouncerPhrase = "";
-    this.lastAnnouncerAt = 0;
-    this.ttsVoice = null;
-    this.speechEnabled = "speechSynthesis" in window;
-    this.preloadAnnouncerAudio();
     this.musicOscillators = [];
     this.musicTimerId = 0;
     this.musicStepIndex = 0;
@@ -1206,6 +1200,7 @@ class FruitMergeGame {
     if (performance.now() - this.lastMergeAt >= 2200 && this.combo !== 1) {
       this.combo = 1;
       this.lastComboRewardStep = 2;
+      this.comboText.classList.remove("combo-tier-1", "combo-tier-2", "combo-tier-3");
       this.updateComboText();
     }
 
@@ -1376,6 +1371,18 @@ class FruitMergeGame {
   }
 
   /**
+   * 根据连击层级播放顶部文字动画。
+   */
+  animateComboText(rewardStep) {
+    const tier = rewardStep >= 5 ? 3 : rewardStep >= 4 ? 2 : 1;
+    const className = `combo-tier-${tier}`;
+
+    this.comboText.classList.remove("combo-tier-1", "combo-tier-2", "combo-tier-3");
+    void this.comboText.offsetWidth;
+    this.comboText.classList.add(className);
+  }
+
+  /**
    * 刷新最高分字段。
    */
   updateBestScoreText() {
@@ -1406,12 +1413,9 @@ class FruitMergeGame {
     }
 
     if (this.musicGain) {
-      this.musicGain.gain.value = this.soundEnabled ? 0.22 : 0;
+      this.musicGain.gain.value = this.soundEnabled ? 0.14 : 0;
     }
 
-    Object.values(this.announcerAudioMap).forEach((audio) => {
-      audio.volume = this.volume;
-    });
   }
 
   /**
@@ -1449,39 +1453,6 @@ class FruitMergeGame {
     }
 
     return this.audioContext;
-  }
-
-  /**
-   * 创建 announcer 语音资源映射，优先使用本地音频。
-   */
-  createAnnouncerAudioMap() {
-    return {
-      good: new Audio("audio/good.mp3"),
-      great: new Audio("audio/great.mp3"),
-      awesome: new Audio("audio/awesome.mp3"),
-      perfect: new Audio("audio/perfect.mp3"),
-      unbelievable: new Audio("audio/unbelievable.mp3")
-    };
-  }
-
-  /**
-   * 预加载 announcer 语音资源，找不到文件时静默降级到 TTS。
-   */
-  preloadAnnouncerAudio() {
-    Object.values(this.announcerAudioMap).forEach((audio) => {
-      audio.preload = "auto";
-      audio.volume = this.volume;
-    });
-
-    if (this.speechEnabled) {
-      const updateVoices = () => {
-        const voices = window.speechSynthesis.getVoices();
-        this.ttsVoice = voices.find((voice) => /en/i.test(voice.lang)) || voices[0] || null;
-      };
-
-      updateVoices();
-      window.speechSynthesis.addEventListener("voiceschanged", updateVoices, { once: true });
-    }
   }
 
   /**
@@ -1660,74 +1631,8 @@ class FruitMergeGame {
 
     this.lastComboRewardAt = now;
     this.lastComboRewardStep = rewardStep;
+    this.animateComboText(rewardStep);
     this.playComboRewardSound(audioContext, rewardStep, level);
-    this.playAnnouncerForCombo(rewardStep);
-  }
-
-  /**
-   * 根据连击等级播放 Good / Great / Awesome / Perfect 等 announcer 语音。
-   */
-  playAnnouncerForCombo(rewardStep) {
-    const phrase = rewardStep >= 7
-      ? "unbelievable"
-      : rewardStep >= 6
-        ? "perfect"
-        : rewardStep >= 5
-          ? "awesome"
-          : rewardStep >= 4
-            ? "great"
-            : "good";
-
-    const now = performance.now();
-    if (this.lastAnnouncerPhrase === phrase && now - this.lastAnnouncerAt < 500) {
-      return;
-    }
-
-    this.lastAnnouncerPhrase = phrase;
-    this.lastAnnouncerAt = now;
-
-    const audio = this.announcerAudioMap[phrase];
-    if (audio) {
-      try {
-        audio.currentTime = 0;
-        const playPromise = audio.play();
-        if (playPromise && typeof playPromise.catch === "function") {
-          playPromise.catch(() => {
-            this.speakPhrase(phrase);
-          });
-        }
-        return;
-      } catch (error) {
-        void error;
-      }
-    }
-
-    this.speakPhrase(phrase);
-  }
-
-  /**
-   * 使用浏览器 TTS 作为 announcer 语音兜底。
-   */
-  speakPhrase(phrase) {
-    if (!this.soundEnabled || !this.speechEnabled || !this.ttsVoice) {
-      return;
-    }
-
-    const spokenTextMap = {
-      good: "Good",
-      great: "Great",
-      awesome: "Awesome",
-      perfect: "Perfect",
-      unbelievable: "Unbelievable"
-    };
-
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(spokenTextMap[phrase] || "Good");
-    utterance.voice = this.ttsVoice;
-    utterance.rate = 1.02;
-    utterance.pitch = 1.08;
-    utterance.volume = this.volume;
-    window.speechSynthesis.speak(utterance);
   }
 
   /**
@@ -1771,7 +1676,7 @@ class FruitMergeGame {
       const gainNode = audioContext.createGain();
       const filter = audioContext.createBiquadFilter();
       const frequency = base * ratio;
-      const peak = Math.max(0.035, 0.05 + tier * 0.01 - index * 0.004);
+      const peak = Math.max(0.055, 0.085 + tier * 0.018 - index * 0.006);
 
       oscillator.type = config.wave;
       oscillator.frequency.setValueAtTime(frequency, startTime);
@@ -1873,7 +1778,7 @@ class FruitMergeGame {
       const gainNode = audioContext.createGain();
       const filter = audioContext.createBiquadFilter();
       const frequency = baseFrequency * ratio;
-      const peakGain = Math.max(0.05, profile.volume - index * 0.012 + Math.min(combo, 6) * 0.004);
+      const peakGain = Math.max(0.08, profile.volume + 0.03 - index * 0.01 + Math.min(combo, 6) * 0.008);
       const stopTime = startTime + profile.decay;
 
       oscillator.type = profile.wave;
