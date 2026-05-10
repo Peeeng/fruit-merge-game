@@ -10,6 +10,9 @@
   <div class="page">
     <div class="game-shell">
       <section class="status-panel compact-stats">
+        <button id="pauseButton" class="icon-button pause-top-right" type="button" aria-label="暂停游戏" title="暂停">
+          <span class="pause-icon is-pause" aria-hidden="true"></span>
+        </button>
         <div class="score-card">
           <span class="label">分数</span>
           <strong id="scoreValue">0</strong>
@@ -18,13 +21,8 @@
           <span class="label">最高分</span>
           <strong id="bestScoreValue">0</strong>
         </div>
-        <div class="score-card stats-with-button">
-          <div class="stats-card-header">
-            <span class="label">最高连击</span>
-            <button id="pauseButton" class="icon-button" type="button" aria-label="暂停游戏" title="暂停">
-              <span class="pause-icon" aria-hidden="true"></span>
-            </button>
-          </div>
+        <div class="score-card">
+          <span class="label">最高连击</span>
           <strong id="topComboValue">1</strong>
         </div>
       </section>
