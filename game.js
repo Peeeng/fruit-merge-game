@@ -2304,14 +2304,44 @@ window.addEventListener("load", () => {
     }
   });
 
-  // ── 手机端声音修复：首次触摸时恢复 AudioContext ──
+  // ── 手机端声音修复：首次触摸时创建并解锁 AudioContext ──
   function resumeAudio() {
-    if (g && g.ensureAudioContext) {
-      const ctx = g.ensureAudioContext();
-      if (ctx && ctx.state === "suspended") {
-        ctx.resume();
-      }
+    if (!g) return;
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+
+    // 在用户手势中创建全新的 AudioContext（移动端必须）
+    const newCtx = new AudioContextClass();
+
+    // 播放一段极短的静音来彻底解锁音频
+    const silentBuffer = newCtx.createBuffer(1, 1, 22050);
+    const source = newCtx.createBufferSource();
+    source.buffer = silentBuffer;
+    const silentGain = newCtx.createGain();
+    silentGain.gain.value = 0;
+    source.connect(silentGain);
+    silentGain.connect(newCtx.destination);
+    source.start(0);
+
+    // 替换游戏中的音频上下文
+    if (g.audioContext && g.audioContext.state !== "closed") {
+      try { g.audioContext.close(); } catch (e) { /* ignore */ }
     }
+    g.audioContext = newCtx;
+
+    // 重建增益节点
+    g.masterGain = newCtx.createGain();
+    g.masterGain.connect(newCtx.destination);
+    g.musicGain = newCtx.createGain();
+    g.musicGain.connect(g.masterGain);
+    g.applyVolume();
+
+    // 停掉旧音乐，重新启动
+    g.stopBackgroundMusic();
+    if (!g.isPaused && !g.isGameOver) {
+      g.startBackgroundMusic();
+    }
+
     document.removeEventListener("touchstart", resumeAudio);
     document.removeEventListener("click", resumeAudio);
   }
