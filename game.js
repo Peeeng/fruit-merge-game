@@ -84,6 +84,7 @@ class FruitMergeGame {
     this.fruits = [];
     this.mergeEffects = [];
     this.comboParticles = [];
+    this.collectedFruits = new Set();
     this.score = 0;
     this.combo = 1;
     this.maxCombo = 1;
@@ -109,6 +110,8 @@ class FruitMergeGame {
     this.musicTimerId = 0;
     this.musicStepIndex = 0;
     this.soundEnabled = true;
+    this.comboBadgeEl = document.getElementById("comboMultiplierBadge");
+    this.collectionCountEl = document.getElementById("collectionCount");
 
     this.updateBestScoreText();
     this.bindEvents();
@@ -128,17 +131,19 @@ class FruitMergeGame {
     this.gameContainer.addEventListener("pointerdown", this.handlePointerDown);
     this.gameContainer.addEventListener("pointerleave", this.handlePointerLeave);
 
-    this.pauseButton.addEventListener("click", () => {
-      if (this.isGameOver) {
-        return;
-      }
+    if (this.pauseButton) {
+      this.pauseButton.addEventListener("click", () => {
+        if (this.isGameOver) {
+          return;
+        }
 
-      if (this.isPaused) {
-        this.resumeGame();
-      } else {
-        this.pauseGame();
-      }
-    });
+        if (this.isPaused) {
+          this.resumeGame();
+        } else {
+          this.pauseGame();
+        }
+      });
+    }
 
     this.resumeButton.addEventListener("click", () => this.resumeGame());
     this.overlayRestartButton.addEventListener("click", () => this.startNewGame());
@@ -170,6 +175,7 @@ class FruitMergeGame {
     this.fruits = [];
     this.mergeEffects = [];
     this.comboParticles = [];
+    this.collectedFruits = new Set();
     this.score = 0;
     this.combo = 1;
     this.maxCombo = 1;
@@ -193,6 +199,8 @@ class FruitMergeGame {
     this.updateOverlayVisibility();
     this.updateDangerLinePosition();
     this.updateDropIndicator();
+    this.updateCollectionDisplay();
+    this.updateComboDisplay();
     this.startBackgroundMusic();
 
     if (!this.animationFrameId) {
@@ -373,6 +381,8 @@ class FruitMergeGame {
 
     World.add(this.world, fruit);
     this.fruits.push(fruit);
+    this.collectedFruits.add(level);
+    this.updateCollectionDisplay();
     return fruit;
   }
 
@@ -531,6 +541,7 @@ class FruitMergeGame {
     this.lastMergeAt = now;
     this.maxCombo = Math.max(this.maxCombo, this.combo);
     this.updateTopComboText();
+    this.updateComboDisplay();
   }
 
   /**
@@ -584,9 +595,13 @@ class FruitMergeGame {
 
     this.isGameOver = true;
     this.isPaused = false;
+    const isNewHighScore = this.score > this.bestScore;
     this.updateBestScore(this.score);
     this.finalScoreValue.textContent = String(this.score);
     this.maxComboValue.textContent = String(this.maxCombo);
+    const badge = document.getElementById("newHighScoreBadge");
+    if (badge) badge.classList.toggle("hidden", !isNewHighScore);
+    this.animateScoreRoll();
     this.updatePauseUI();
     this.updateOverlayVisibility();
     this.playSound("gameover");
@@ -643,6 +658,9 @@ class FruitMergeGame {
   addScore(value) {
     this.score += value;
     this.updateScoreText();
+    this.scoreValue.classList.remove("score-roll");
+    void this.scoreValue.offsetWidth;
+    this.scoreValue.classList.add("score-roll");
     this.updateBestScore(this.score);
   }
 
@@ -1221,6 +1239,7 @@ class FruitMergeGame {
       this.comboFlash.classList.remove("play-tier-1", "play-tier-2", "play-tier-3");
       this.comboBurst.classList.remove("play-tier-1", "play-tier-2", "play-tier-3");
       this.comboBanner.classList.remove("play-tier-1", "play-tier-2", "play-tier-3");
+      this.updateComboDisplay();
     }
 
     this.mergeEffects = this.mergeEffects.filter((effect) => {
@@ -1420,12 +1439,24 @@ class FruitMergeGame {
    * 更新暂停按钮显示文案。
    */
   updatePauseUI() {
-    this.pauseButton.setAttribute("aria-label", this.isPaused ? "继续游戏" : "暂停游戏");
-    this.pauseButton.setAttribute("title", this.isPaused ? "继续" : "暂停");
-    const icon = this.pauseButton.querySelector(".pause-icon");
-    if (icon) {
-      icon.classList.toggle("is-play", this.isPaused);
-      icon.classList.toggle("is-pause", !this.isPaused);
+    if (this.pauseButton) {
+      this.pauseButton.setAttribute("aria-label", this.isPaused ? "继续游戏" : "暂停游戏");
+      this.pauseButton.setAttribute("title", this.isPaused ? "继续" : "暂停");
+      const icon = this.pauseButton.querySelector(".pause-icon");
+      if (icon) {
+        icon.classList.toggle("is-play", this.isPaused);
+        icon.classList.toggle("is-pause", !this.isPaused);
+      }
+    } else {
+      // 齿轮按钮图标同步暂停状态
+      const gearBtn = document.getElementById("settingsButton");
+      if (gearBtn) {
+        const icon = gearBtn.querySelector(".pause-icon");
+        if (icon) {
+          icon.classList.toggle("is-play", this.isPaused);
+          icon.classList.toggle("is-pause", !this.isPaused);
+        }
+      }
     }
   }
 
@@ -2101,8 +2132,189 @@ class FruitMergeGame {
   clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
   }
+
+  /**
+   * 更新连击徽章显示。
+   */
+  updateComboDisplay() {
+    if (this.comboBadgeEl) {
+      if (this.combo > 1) {
+        this.comboBadgeEl.textContent = `x${this.combo}`;
+        this.comboBadgeEl.classList.remove("hidden");
+        this.gameContainer.classList.add("combo-active");
+      } else {
+        this.comboBadgeEl.classList.add("hidden");
+        this.gameContainer.classList.remove("combo-active");
+      }
+    }
+  }
+
+  /**
+   * 更新水果图鉴计数。
+   */
+  updateCollectionDisplay() {
+    if (this.collectionCountEl) {
+      this.collectionCountEl.textContent = `${this.collectedFruits.size} / ${FRUITS.length}`;
+    }
+  }
+
+  /**
+   * 分数滚动动画（游戏结束）。
+   */
+  animateScoreRoll() {
+    const target = this.score;
+    const duration = 600;
+    const startTime = performance.now();
+    const tick = () => {
+      const progress = Math.min((performance.now() - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      if (this.finalScoreValue) {
+        this.finalScoreValue.textContent = String(Math.round(target * eased));
+      }
+      if (progress < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+
+  /**
+   * 渲染水果图鉴网格。
+   */
+  renderCollectionGrid() {
+    const grid = document.getElementById("collectionGrid");
+    if (!grid) return;
+    grid.innerHTML = "";
+    for (const fruitDef of FRUITS) {
+      const item = document.createElement("div");
+      const unlocked = this.collectedFruits.has(fruitDef.level);
+      item.className = `collection-item ${unlocked ? "unlocked" : "locked"}`;
+      if (unlocked) {
+        const c = document.createElement("canvas");
+        const size = 48;
+        c.width = c.height = size;
+        c.style.width = c.style.height = size + "px";
+        const ctx = c.getContext("2d");
+        ctx.clearRect(0, 0, size, size);
+        this.drawFruit(ctx, size / 2, size / 2, 0, {
+          level: fruitDef.level,
+          radius: fruitDef.radius * (size / 2 / (FRUITS[9].radius + 8)),
+          color: fruitDef.color,
+          accent: fruitDef.accent
+        }, false);
+        item.appendChild(c);
+      } else {
+        const s = document.createElement("span");
+        s.className = "fruit-locked";
+        s.textContent = "❓";
+        item.appendChild(s);
+      }
+      const name = document.createElement("span");
+      name.className = "fruit-name";
+      name.textContent = fruitDef.name;
+      item.appendChild(name);
+      grid.appendChild(item);
+    }
+  }
 }
 
 window.addEventListener("load", () => {
-  new FruitMergeGame();
+  window.game = new FruitMergeGame();
+
+  // ── 附加 UI 功能（不干扰核心游戏逻辑） ──
+  const g = window.game;
+
+  // 齿轮：暂停 + 设置
+  document.getElementById("settingsButton")?.addEventListener("click", () => {
+    if (!g || g.isGameOver) return;
+    if (g.isPaused) {
+      g.resumeGame();
+      document.getElementById("settingsOverlay")?.classList.add("hidden");
+    } else {
+      g.pauseGame();
+      document.getElementById("settingsOverlay")?.classList.remove("hidden");
+    }
+  });
+  document.getElementById("closeSettingsButton")?.addEventListener("click", () => {
+    document.getElementById("settingsOverlay")?.classList.add("hidden");
+    if (g && g.isPaused) g.resumeGame();
+  });
+  document.getElementById("soundToggle")?.addEventListener("change", function() {
+    if (g) {
+      g.soundEnabled = this.checked;
+      g.applyVolume();
+      const key = "fruit-merge-sound-enabled";
+      window.localStorage.setItem(key, this.checked ? "1" : "0");
+      if (!this.checked) {
+        g.stopBackgroundMusic();
+      } else if (!g.isPaused && !g.isGameOver) {
+        g.startBackgroundMusic();
+      }
+      g.playSound("toggle-on");
+    }
+  });
+  document.getElementById("resetScoreButton")?.addEventListener("click", () => {
+    if (g) {
+      g.bestScore = 0;
+      window.localStorage.setItem(g.highScoreKey, "0");
+      g.updateBestScoreText();
+      g.playSound("toggle-on");
+    }
+  });
+
+  // 读取音效设置
+  const soundVal = window.localStorage.getItem("fruit-merge-sound-enabled");
+  if (soundVal === "0") {
+    const toggle = document.getElementById("soundToggle");
+    if (toggle) toggle.checked = false;
+    if (g) {
+      g.soundEnabled = false;
+      g.applyVolume();
+      g.stopBackgroundMusic();
+    }
+  }
+
+  // 图鉴
+  document.getElementById("collectionBtn")?.addEventListener("click", () => {
+    if (!g || g.isGameOver || g.isPaused) return;
+    if (g.renderCollectionGrid) g.renderCollectionGrid();
+    document.getElementById("collectionOverlay")?.classList.remove("hidden");
+    g.pauseGame();
+  });
+  document.getElementById("closeCollectionButton")?.addEventListener("click", () => {
+    document.getElementById("collectionOverlay")?.classList.add("hidden");
+    if (g) g.resumeGame();
+  });
+
+  // 分享
+  document.getElementById("shareButton")?.addEventListener("click", () => {
+    if (!g) return;
+    if (navigator.share) {
+      g.canvas.toBlob((blob) => {
+        if (!blob) return;
+        navigator.share({
+          title: "合成水果",
+          text: "我在合成水果中获得了 " + g.score + " 分！最高连击 " + g.maxCombo + "！来挑战我吧 🍎",
+          files: [new File([blob], "fruit-merge-score.png", { type: "image/png" })]
+        }).catch(() => {});
+      });
+    } else {
+      const link = document.createElement("a");
+      link.download = "fruit-merge-score.png";
+      link.href = g.canvas.toDataURL("image/png");
+      link.click();
+    }
+  });
+
+  // ── 手机端声音修复：首次触摸时恢复 AudioContext ──
+  function resumeAudio() {
+    if (g && g.ensureAudioContext) {
+      const ctx = g.ensureAudioContext();
+      if (ctx && ctx.state === "suspended") {
+        ctx.resume();
+      }
+    }
+    document.removeEventListener("touchstart", resumeAudio);
+    document.removeEventListener("click", resumeAudio);
+  }
+  document.addEventListener("touchstart", resumeAudio, { once: true });
+  document.addEventListener("click", resumeAudio, { once: true });
 });

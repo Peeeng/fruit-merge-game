@@ -9,10 +9,11 @@
 <body>
   <div class="page">
     <div class="game-shell">
-      <section class="status-panel compact-stats">
-        <button id="pauseButton" class="icon-button pause-top-right" type="button" aria-label="暂停游戏" title="暂停">
-          <span class="pause-icon is-pause" aria-hidden="true"></span>
+      <section class="status-panel">
+        <button id="settingsButton" class="top-btn" type="button" aria-label="设置/暂停" title="设置/暂停">
+          <span aria-hidden="true">⚙</span>
         </button>
+
         <div class="score-card">
           <span class="label">分数</span>
           <strong id="scoreValue">0</strong>
@@ -24,8 +25,16 @@
         <div class="score-card">
           <span class="label">最高连击</span>
           <strong id="topComboValue">1</strong>
+          <span id="comboMultiplierBadge" class="combo-badge hidden">x1</span>
         </div>
+
       </section>
+
+      <div class="sub-bar">
+        <button id="collectionBtn" class="sub-btn" type="button">
+          🍎 图鉴 <span id="collectionCount">0/10</span>
+        </button>
+      </div>
 
       <section class="game-panel">
         <div id="gameContainer" class="game-container">
@@ -49,12 +58,42 @@
           <div id="gameOverOverlay" class="overlay hidden">
             <div class="overlay-card">
               <h2>游戏结束</h2>
+              <div id="newHighScoreBadge" class="new-highscore-badge hidden">🎉 新纪录！</div>
               <p>水果堆过警戒线啦，再试一次吧。</p>
               <div class="result-stats">
                 <div>本局分数：<strong id="finalScoreValue">0</strong></div>
                 <div>最高连击：<strong id="maxComboValue">1</strong></div>
               </div>
-              <button id="overlayRestartButton" class="control-button primary" type="button">重新开始</button>
+              <div class="overlay-buttons">
+                <button id="overlayRestartButton" class="control-button primary" type="button">重新开始</button>
+                <button id="shareButton" class="control-button secondary" type="button">📤 分享</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="settingsOverlay" class="overlay hidden">
+            <div class="overlay-card">
+              <h2>⚙ 设置</h2>
+              <div class="setting-row">
+                <span>音效</span>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="soundToggle" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="setting-row">
+                <span>重置最高分</span>
+                <button id="resetScoreButton" class="control-button danger small" type="button">重置</button>
+              </div>
+              <button id="closeSettingsButton" class="control-button primary" type="button" style="margin-top:18px">关闭</button>
+            </div>
+          </div>
+
+          <div id="collectionOverlay" class="overlay hidden">
+            <div class="overlay-card collection-card">
+              <h2>🍎 水果图鉴</h2>
+              <div id="collectionGrid" class="collection-grid"></div>
+              <button id="closeCollectionButton" class="control-button primary" type="button" style="margin-top:14px">关闭</button>
             </div>
           </div>
         </div>
