@@ -110,6 +110,7 @@ class FruitMergeGame {
     this.musicTimerId = 0;
     this.musicStepIndex = 0;
     this.soundEnabled = true;
+    this.audioReady = false;
     this.comboBadgeEl = document.getElementById("comboMultiplierBadge");
     this.collectionCountEl = document.getElementById("collectionCount");
 
@@ -1557,6 +1558,10 @@ class FruitMergeGame {
       return null;
     }
 
+    if (!this.audioReady) {
+      return null;
+    }
+
     if (!this.audioContext) {
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
       if (!AudioContextClass) {
@@ -2328,6 +2333,7 @@ window.addEventListener("load", () => {
       try { g.audioContext.close(); } catch (e) { /* ignore */ }
     }
     g.audioContext = newCtx;
+    g.audioReady = true;
 
     // 重建增益节点
     g.masterGain = newCtx.createGain();
