@@ -637,9 +637,6 @@ class FruitMergeGame {
   addScore(value) {
     this.score += value;
     this.updateScoreText();
-    this.scoreValue.classList.remove("score-roll");
-    void this.scoreValue.offsetWidth;
-    this.scoreValue.classList.add("score-roll");
     this.updateBestScore(this.score);
   }
 
@@ -1476,8 +1473,6 @@ class FruitMergeGame {
     this.comboFlash.classList.remove("play-tier-1", "play-tier-2", "play-tier-3");
     this.comboBurst.classList.remove("play-tier-1", "play-tier-2", "play-tier-3");
     this.comboBanner.classList.remove("play-tier-1", "play-tier-2", "play-tier-3");
-
-    void this.comboFlash.offsetWidth;
 
     this.gameContainer.classList.add(screenTierClass, shakeClass);
     this.comboFlash.classList.add(tierClass);
