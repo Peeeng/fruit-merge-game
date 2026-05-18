@@ -28,6 +28,425 @@ const FRUITS = [
 const UNLOCK_LEVEL_FOR_THIRD_START_FRUIT = 3;
 const FLOOR_VISIBLE_MARGIN = 22;
 
+/**
+ * 音频管理器：用 OfflineAudioContext 预渲染合成音效为 WAV，
+ * 再用 <audio> 元素播放（走媒体音量，iOS 专用）。
+ */
+class AudioManager {
+  constructor() {
+    this.sfxVolume = 0.22;
+    this.musicVolume = 0.14;
+    this.enabled = true;
+    this._cache = {};
+    this._bgmUrl = null;
+    this._bgmAudio = null;
+  }
+
+  /* ── 预渲染所有音效 ── */
+  async preRenderAll() {
+    const sr = 44100;
+
+    // 投放音
+    this._cache.drop = await this._render(sr, 0.15, (ctx, t) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(520, t);
+      osc.frequency.exponentialRampToValueAtTime(320, t + 0.08);
+      filter.type = "lowpass";
+      filter.frequency.value = 1600;
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.18, t + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.1);
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.11);
+    });
+
+    // 结束音
+    this._cache.gameover = await this._render(sr, 0.55, (ctx, t) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(330, t);
+      osc.frequency.exponentialRampToValueAtTime(140, t + 0.45);
+      filter.type = "lowpass";
+      filter.frequency.setValueAtTime(900, t);
+      filter.frequency.exponentialRampToValueAtTime(420, t + 0.45);
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.18, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.52);
+    });
+
+    // 开关音
+    this._cache.toggle = await this._render(sr, 0.15, (ctx, t) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(740, t);
+      osc.frequency.exponentialRampToValueAtTime(980, t + 0.08);
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.12, t + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.1);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.11);
+    });
+
+    // 碰撞音（取中等冲击强度 level=3 strength=4）
+    this._cache.impact = await this._render(sr, 0.18, (ctx, t) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+      const level = 3, strength = 4;
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(260 + level * 18, t);
+      osc.frequency.exponentialRampToValueAtTime(170 + level * 8, t + 0.08);
+      filter.type = "bandpass";
+      filter.frequency.setValueAtTime(1200 + level * 60, t);
+      filter.Q.value = 1.5;
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.012 + strength * 0.008, t + 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.1);
+    });
+
+    // 合并音：10个等级
+    for (let level = 0; level <= 9; level++) {
+      this._cache['merge_' + level] = await this._renderMerge(sr, level);
+    }
+
+    // 连击奖励音：3级
+    for (let tier = 1; tier <= 3; tier++) {
+      this._cache['combo_' + tier] = await this._renderCombo(sr, tier);
+    }
+
+    // 背景音乐：完整循环
+    this._bgmUrl = await this._renderBGM(sr);
+  }
+
+  /* ── 合并音渲染 ── */
+  async _renderMerge(sr, level) {
+    const baseFrequency = 500 * Math.pow(1.082, level);
+    const profiles = [
+      { wave: "sine", filter: 2600, ratios: [1, 1.25], volume: 0.09, decay: 0.16 },
+      { wave: "triangle", filter: 2500, ratios: [1, 1.2], volume: 0.1, decay: 0.18 },
+      { wave: "triangle", filter: 2300, ratios: [1, 1.16, 1.4], volume: 0.11, decay: 0.18 },
+      { wave: "square", filter: 1800, ratios: [1, 1.12], volume: 0.085, decay: 0.14 },
+      { wave: "triangle", filter: 2800, ratios: [1, 1.33], volume: 0.1, decay: 0.15 },
+      { wave: "sine", filter: 2100, ratios: [1, 1.5], volume: 0.11, decay: 0.2 },
+      { wave: "triangle", filter: 2400, ratios: [1, 1.25, 1.5], volume: 0.115, decay: 0.22 },
+      { wave: "square", filter: 1500, ratios: [1, 1.19, 1.42], volume: 0.09, decay: 0.16 },
+      { wave: "square", filter: 900, ratios: [0.75, 1, 1.12], volume: 0.08, decay: 0.24 },
+      { wave: "sawtooth", filter: 700, ratios: [0.5, 0.75, 1], volume: 0.095, decay: 0.28 }
+    ];
+    const profile = profiles[level];
+    const combo = 3;
+    const totalDuration = 0.35;
+
+    return this._render(sr, totalDuration, (ctx, t) => {
+      profile.ratios.forEach((ratio, index) => {
+        const start = t + index * 0.032;
+        const osc = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+        const filterNode = ctx.createBiquadFilter();
+        const frequency = baseFrequency * ratio;
+        const peakGain = Math.max(0.08, profile.volume + 0.03 - index * 0.01 + Math.min(combo, 6) * 0.008);
+        const stopT = start + profile.decay;
+
+        osc.type = profile.wave;
+        osc.frequency.setValueAtTime(frequency, start);
+        osc.frequency.exponentialRampToValueAtTime(frequency * (level >= 8 ? 1.04 : 1.12), start + profile.decay * 0.45);
+
+        filterNode.type = level >= 8 ? "bandpass" : "lowpass";
+        filterNode.frequency.setValueAtTime(profile.filter + level * 80, start);
+        filterNode.Q.value = level >= 8 ? 1.8 : 0.6;
+
+        gainNode.gain.setValueAtTime(0.0001, start);
+        gainNode.gain.exponentialRampToValueAtTime(peakGain, start + 0.01);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, stopT);
+
+        osc.connect(filterNode);
+        filterNode.connect(gainNode);
+        gainNode.connect(ctx.destination);
+        osc.start(start);
+        osc.stop(stopT + 0.02);
+      });
+
+      // 8/9级加低频 thump
+      if (level >= 8) {
+        const thump = ctx.createOscillator();
+        const thumpGain = ctx.createGain();
+        const thumpFilter = ctx.createBiquadFilter();
+        thump.type = "sine";
+        thump.frequency.setValueAtTime(level === 8 ? 120 : 90, t);
+        thump.frequency.exponentialRampToValueAtTime(level === 8 ? 70 : 55, t + 0.18);
+        thumpFilter.type = "lowpass";
+        thumpFilter.frequency.setValueAtTime(level === 8 ? 500 : 420, t);
+        thumpGain.gain.setValueAtTime(0.0001, t);
+        thumpGain.gain.exponentialRampToValueAtTime(level === 8 ? 0.06 : 0.08, t + 0.015);
+        thumpGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
+        thump.connect(thumpFilter);
+        thumpFilter.connect(thumpGain);
+        thumpGain.connect(ctx.destination);
+        thump.start(t);
+        thump.stop(t + 0.22);
+      }
+
+      // motif
+      const motifs = [
+        [1.18], [1, 1.2], [1, 1.16, 1.32], [1, 1.12],
+        [1, 1.26], [1, 1.2, 1.5], [1, 1.25, 1.5],
+        [1, 1.12, 1.42], [0.82, 1, 1.12], [0.75, 0.94, 1.26, 1.5]
+      ];
+      const motif = motifs[level];
+      motif.forEach((ratio, index) => {
+        const start = t + 0.02 + index * 0.055;
+        const osc = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+        const filterNode = ctx.createBiquadFilter();
+        const frequency = baseFrequency * ratio;
+        const duration = level >= 8 ? 0.12 : 0.09;
+
+        osc.type = level >= 9 ? "triangle" : "sine";
+        osc.frequency.setValueAtTime(frequency, start);
+        osc.frequency.exponentialRampToValueAtTime(frequency * 1.03, start + duration * 0.6);
+
+        filterNode.type = "lowpass";
+        filterNode.frequency.setValueAtTime(level >= 8 ? 1500 : 2200, start);
+
+        gainNode.gain.setValueAtTime(0.0001, start);
+        gainNode.gain.exponentialRampToValueAtTime(level >= 8 ? 0.05 : 0.04, start + 0.01);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+
+        osc.connect(filterNode);
+        filterNode.connect(gainNode);
+        gainNode.connect(ctx.destination);
+        osc.start(start);
+        osc.stop(start + duration + 0.02);
+      });
+    });
+  }
+
+  /* ── 连击奖励音渲染 ── */
+  async _renderCombo(sr, tier) {
+    const rewardStep = tier === 3 ? 7 : tier === 2 ? 4 : 3;
+    const base = 720 + rewardStep * 42 + 5 * 8;
+    const tierConfig = {
+      1: { wave: "sine", noteGap: 0.05, duration: 0.095, filter: 2300, motif: [1, 1.24, 1.52], accent: false },
+      2: { wave: "triangle", noteGap: 0.045, duration: 0.11, filter: 2500, motif: [1, 1.14, 1.38, 1.68], accent: true },
+      3: { wave: "triangle", noteGap: 0.04, duration: 0.125, filter: 2750, motif: [1, 1.18, 1.42, 1.72, 2.02], accent: true }
+    };
+    const config = tierConfig[tier];
+    const totalT = config.motif.length * config.noteGap + 0.2;
+
+    return this._render(sr, totalT, (ctx, t) => {
+      config.motif.forEach((ratio, index) => {
+        const start = t + index * config.noteGap;
+        const osc = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+        const filterNode = ctx.createBiquadFilter();
+        const frequency = base * ratio;
+        const peak = Math.max(0.055, 0.085 + tier * 0.018 - index * 0.006);
+
+        osc.type = config.wave;
+        osc.frequency.setValueAtTime(frequency, start);
+        osc.frequency.exponentialRampToValueAtTime(frequency * (tier === 3 ? 1.06 : 1.04), start + config.duration * 0.65);
+
+        filterNode.type = "lowpass";
+        filterNode.frequency.setValueAtTime(config.filter + rewardStep * 90, start);
+        filterNode.Q.value = tier === 1 ? 0.8 : 1.05;
+
+        gainNode.gain.setValueAtTime(0.0001, start);
+        gainNode.gain.exponentialRampToValueAtTime(peak, start + 0.008);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, start + config.duration);
+
+        osc.connect(filterNode);
+        filterNode.connect(gainNode);
+        gainNode.connect(ctx.destination);
+        osc.start(start);
+        osc.stop(start + config.duration + 0.02);
+      });
+
+      if (config.accent) {
+        const sparkle = ctx.createOscillator();
+        const sg = ctx.createGain();
+        const sf = ctx.createBiquadFilter();
+        sparkle.type = tier === 3 ? "sine" : "triangle";
+        sparkle.frequency.setValueAtTime(base * (tier === 3 ? 2.28 : 2.05), t + 0.02);
+        sparkle.frequency.exponentialRampToValueAtTime(base * (tier === 3 ? 2.62 : 2.34), t + 0.16);
+        sf.type = "bandpass";
+        sf.frequency.setValueAtTime(2700 + tier * 180, t);
+        sf.Q.value = tier === 3 ? 1.8 : 1.4;
+        sg.gain.setValueAtTime(0.0001, t + 0.02);
+        sg.gain.exponentialRampToValueAtTime(tier === 3 ? 0.055 : 0.04, t + 0.04);
+        sg.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+        sparkle.connect(sf);
+        sf.connect(sg);
+        sg.connect(ctx.destination);
+        sparkle.start(t + 0.02);
+        sparkle.stop(t + 0.2);
+      }
+    });
+  }
+
+  /* ── 背景音乐循环渲染 ── */
+  async _renderBGM(sr) {
+    const sections = [
+      { stepDuration: 0.34, lead: [523.25, 587.33, 659.25, 783.99, 659.25, 587.33, 523.25, 587.33], harmony: [392, 440, 493.88, 587.33, 493.88, 440, 392, 440], bass: [196, 196, 220, 220, 174.61, 174.61, 196, 196] },
+      { stepDuration: 0.38, lead: [659.25, 698.46, 783.99, 880, 783.99, 698.46, 659.25, 587.33], harmony: [493.88, 523.25, 587.33, 659.25, 587.33, 523.25, 493.88, 440], bass: [220, 220, 246.94, 246.94, 196, 196, 174.61, 174.61] }
+    ];
+
+    // 计算总长度
+    let totalDuration = 0;
+    for (const s of sections) {
+      totalDuration += s.lead.length * s.stepDuration;
+    }
+    totalDuration += 1.5; // 余量
+
+    return this._render(sr, Math.ceil(totalDuration), (ctx, t) => {
+      let cursor = t;
+      for (const section of sections) {
+        for (let i = 0; i < section.lead.length; i++) {
+          const stepT = cursor;
+          const stepDur = section.stepDuration;
+
+          // lead
+          this._playNote(ctx, stepT, stepDur * 0.92, section.lead[i], "triangle", 0.62, 1800);
+          // harmony
+          this._playNote(ctx, stepT, stepDur * 0.88, section.harmony[i], "sine", 0.3, 1400);
+          // bass
+          this._playNote(ctx, stepT, stepDur * 0.95, section.bass[i], "sine", 0.4, 900);
+          // chime
+          if (i % 2 === 0) {
+            this._playNote(ctx, stepT, stepDur * 0.35, section.lead[i] * 2, "triangle", 0.13, 2200);
+          }
+
+          cursor += stepDur;
+        }
+      }
+    });
+  }
+
+  _playNote(ctx, startTime, duration, frequency, waveType, gainAmount, filterFrequency) {
+    const osc = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    const filterNode = ctx.createBiquadFilter();
+    const stopTime = startTime + duration;
+    osc.type = waveType;
+    osc.frequency.setValueAtTime(frequency, startTime);
+    filterNode.type = "lowpass";
+    filterNode.frequency.setValueAtTime(filterFrequency, startTime);
+    gainNode.gain.setValueAtTime(0.0001, startTime);
+    gainNode.gain.exponentialRampToValueAtTime(gainAmount, startTime + 0.025);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, stopTime);
+    osc.connect(filterNode);
+    filterNode.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    osc.start(startTime);
+    osc.stop(stopTime + 0.02);
+  }
+
+  /* ── 通用渲染器 ── */
+  async _render(sampleRate, durationSec, setupFn) {
+    const length = Math.ceil(sampleRate * durationSec);
+    const offlineCtx = new OfflineAudioContext(1, length, sampleRate);
+    setupFn(offlineCtx, 0);
+    const buffer = await offlineCtx.startRendering();
+    return this._bufToUrl(buffer);
+  }
+
+  _bufToUrl(buffer) {
+    const data = buffer.getChannelData(0);
+    const n = data.length;
+    const ab = new ArrayBuffer(44 + n * 2);
+    const v = new DataView(ab);
+    const w = (off, str) => { for (let i = 0; i < str.length; i++) v.setUint8(off + i, str.charCodeAt(i)); };
+    w(0, 'RIFF');
+    v.setUint32(4, 36 + n * 2, true);
+    w(8, 'WAVE');
+    w(12, 'fmt ');
+    v.setUint32(16, 16, true);
+    v.setUint16(20, 1, true);
+    v.setUint16(22, 1, true);
+    v.setUint32(24, buffer.sampleRate, true);
+    v.setUint32(28, buffer.sampleRate * 2, true);
+    v.setUint16(32, 2, true);
+    v.setUint16(34, 16, true);
+    w(36, 'data');
+    v.setUint32(40, n * 2, true);
+    let off = 44;
+    for (let i = 0; i < n; i++) {
+      let s = Math.max(-1, Math.min(1, data[i]));
+      s = s < 0 ? s * 0x8000 : s * 0x7FFF;
+      v.setInt16(off, s, true);
+      off += 2;
+    }
+    return URL.createObjectURL(new Blob([ab], { type: 'audio/wav' }));
+  }
+
+  /* ── 公开 API ── */
+
+  /** 播放音效 */
+  play(name) {
+    if (!this.enabled || !this._cache[name]) return;
+    const a = new Audio(this._cache[name]);
+    a.volume = this.sfxVolume;
+    a.play().catch(() => {});
+  }
+
+  /** 播放合并音 (按等级) */
+  playMerge(level) {
+    this.play('merge_' + level);
+  }
+
+  /** 播放连击奖励音 (按 combo 值自动选 tier) */
+  playCombo(combo) {
+    let tier = 1;
+    if (combo >= 5) tier = 3;
+    else if (combo >= 4) tier = 2;
+    this.play('combo_' + tier);
+  }
+
+  /** 启动背景音乐 */
+  startBGM() {
+    if (!this.enabled || !this._bgmUrl || this._bgmAudio) return;
+    this._bgmAudio = new Audio(this._bgmUrl);
+    this._bgmAudio.loop = true;
+    this._bgmAudio.volume = this.musicVolume;
+    this._bgmAudio.play().catch(() => {});
+  }
+
+  stopBGM() {
+    if (this._bgmAudio) {
+      this._bgmAudio.pause();
+      this._bgmAudio = null;
+    }
+  }
+
+  pauseBGM() {
+    if (this._bgmAudio && !this._bgmAudio.paused) this._bgmAudio.pause();
+  }
+
+  resumeBGM() {
+    if (this._bgmAudio && this._bgmAudio.paused) this._bgmAudio.play().catch(() => {});
+  }
+}
+
 
 /**
  * 游戏主类，负责 Matter 世界、输入处理、渲染和状态管理。
@@ -102,14 +521,8 @@ class FruitMergeGame {
     this.lastDropTime = 0;
     this.lastGameOverCheckTime = 0;
     this.isPointerActive = false;
-    this.lastImpactSoundTime = 0;
-    this.audioContext = null;
-    this.masterGain = null;
-    this.musicGain = null;
-    this.musicOscillators = [];
-    this.musicTimerId = 0;
-    this.musicStepIndex = 0;
     this.soundEnabled = true;
+    this.audio = new AudioManager();
     this.comboBadgeEl = document.getElementById("comboMultiplierBadge");
     this.collectionCountEl = document.getElementById("collectionCount");
 
@@ -469,37 +882,10 @@ class FruitMergeGame {
     this.playComboReward(this.combo, nextLevel);
   }
 
-  /**
-   * 根据碰撞强度播放轻量命中音，避免连续堆叠时过度吵闹。
-   */
+  /** 碰撞音效 */
   playImpactSoundForPair(pair) {
-    const fruitA = pair.bodyA.plugin && pair.bodyA.plugin.fruit;
-    const fruitB = pair.bodyB.plugin && pair.bodyB.plugin.fruit;
-
-    if (!fruitA || !fruitB) {
-      return;
-    }
-
-    if (fruitA.merged || fruitB.merged) {
-      return;
-    }
-
-    const now = performance.now();
-    if (now - this.lastImpactSoundTime < 75) {
-      return;
-    }
-
-    const relativeVelocityX = pair.bodyA.velocity.x - pair.bodyB.velocity.x;
-    const relativeVelocityY = pair.bodyA.velocity.y - pair.bodyB.velocity.y;
-    const impactStrength = Math.hypot(relativeVelocityX, relativeVelocityY);
-
-    if (impactStrength < 1.6) {
-      return;
-    }
-
-    const level = Math.max(fruitA.level, fruitB.level);
-    this.lastImpactSoundTime = now;
-    this.playSound("impact", level, impactStrength);
+    if (!this.soundEnabled) return;
+    this.audio.play("impact");
   }
 
   /**
@@ -1525,18 +1911,47 @@ class FruitMergeGame {
     this.bestScoreValue.textContent = String(this.bestScore);
   }
 
-  /**
-   * 应用总音量到各个增益节点。
-   */
+  /** 应用音量 */
   applyVolume() {
-    if (this.masterGain) {
-      this.masterGain.gain.value = this.soundEnabled ? 0.22 : 0;
-    }
+    this.audio.sfxVolume = this.soundEnabled ? 0.22 : 0;
+    this.audio.musicVolume = this.soundEnabled ? 0.14 : 0;
+    this.audio.enabled = this.soundEnabled;
+  }
 
-    if (this.musicGain) {
-      this.musicGain.gain.value = this.soundEnabled ? 0.14 : 0;
+  /** 统一音效入口 → 委托给 AudioManager */
+  playSound(type, level = 0, _strength = 0) {
+    if (!this.soundEnabled) return;
+    switch (type) {
+      case "drop": this.audio.play("drop"); break;
+      case "merge": this.audio.playMerge(level); break;
+      case "impact": this.audio.play("impact"); break;
+      case "gameover": this.audio.play("gameover"); break;
+      case "toggle-on": this.audio.play("toggle"); break;
     }
+  }
 
+  /** 连击奖励音 */
+  playComboReward(combo, _level) {
+    if (combo < 3) return;
+    this.audio.playCombo(combo);
+    this.playComboScreenEffect(Math.min(combo, 8));
+  }
+
+  /** 碰撞音效（简化：委托给 AudioManager） */
+  playImpactSoundForPair(pair) {
+    if (!this.soundEnabled) return;
+    this.audio.play("impact");
+  }
+
+  /** 启动背景音乐 */
+  startBackgroundMusic() {
+    if (!this.soundEnabled || this.isPaused || this.isGameOver) return;
+    this.audio.startBGM();
+  }
+
+  /** 停止背景音乐 */
+  stopBackgroundMusic() {
+    this.audio.stopBGM();
   }
 
   /**
@@ -1547,538 +1962,6 @@ class FruitMergeGame {
       ? [0, 0, 1, 1, 2]
       : [0, 0, 0, 1];
     return pool[Math.floor(Math.random() * pool.length)];
-  }
-
-  /**
-   * 确保音频上下文已创建，并在浏览器允许后恢复播放。
-   */
-  ensureAudioContext() {
-    if (!this.soundEnabled) {
-      return null;
-    }
-
-    if (!this.audioContext) {
-      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-      if (!AudioContextClass) {
-        return null;
-      }
-
-      this.audioContext = new AudioContextClass();
-      this.masterGain = this.audioContext.createGain();
-      this.masterGain.connect(this.audioContext.destination);
-
-      this.musicGain = this.audioContext.createGain();
-      this.musicGain.connect(this.masterGain);
-      this.applyVolume();
-    }
-
-    if (this.audioContext.state === "suspended") {
-      this.audioContext.resume();
-    }
-
-    return this.audioContext;
-  }
-
-  /**
-   * 启动更接近轻松小游戏风格的分段循环背景音乐。
-   */
-  startBackgroundMusic() {
-    if (!this.soundEnabled || this.isPaused || this.isGameOver) {
-      return;
-    }
-
-    const audioContext = this.ensureAudioContext();
-    if (!audioContext || !this.musicGain || this.musicTimerId) {
-      return;
-    }
-
-    this.musicStepIndex = 0;
-    const sections = [
-      {
-        stepDuration: 0.34,
-        lead: [523.25, 587.33, 659.25, 783.99, 659.25, 587.33, 523.25, 587.33],
-        harmony: [392, 440, 493.88, 587.33, 493.88, 440, 392, 440],
-        bass: [196, 196, 220, 220, 174.61, 174.61, 196, 196]
-      },
-      {
-        stepDuration: 0.38,
-        lead: [659.25, 698.46, 783.99, 880, 783.99, 698.46, 659.25, 587.33],
-        harmony: [493.88, 523.25, 587.33, 659.25, 587.33, 523.25, 493.88, 440],
-        bass: [220, 220, 246.94, 246.94, 196, 196, 174.61, 174.61]
-      }
-    ];
-
-    const totalSteps = sections.reduce((sum, section) => sum + section.lead.length, 0);
-
-    const scheduleStep = () => {
-      if (!this.soundEnabled || this.isPaused || this.isGameOver || !this.audioContext) {
-        this.stopBackgroundMusic();
-        return;
-      }
-
-      let stepCursor = this.musicStepIndex % totalSteps;
-      let currentSection = sections[0];
-
-      for (const section of sections) {
-        if (stepCursor < section.lead.length) {
-          currentSection = section;
-          break;
-        }
-        stepCursor -= section.lead.length;
-      }
-
-      const now = this.audioContext.currentTime;
-      const stepDuration = currentSection.stepDuration;
-      const leadFrequency = currentSection.lead[stepCursor];
-      const harmonyFrequency = currentSection.harmony[stepCursor];
-      const bassFrequency = currentSection.bass[stepCursor];
-
-      this.playMusicNote(now, stepDuration * 0.92, leadFrequency, "triangle", 0.62, 1800);
-      this.playMusicNote(now, stepDuration * 0.88, harmonyFrequency, "sine", 0.3, 1400);
-      this.playMusicNote(now, stepDuration * 0.95, bassFrequency, "sine", 0.4, 900);
-
-      if (stepCursor % 2 === 0) {
-        this.playMusicNote(now, stepDuration * 0.35, leadFrequency * 2, "triangle", 0.13, 2200);
-      }
-
-      this.musicStepIndex += 1;
-      this.musicTimerId = window.setTimeout(scheduleStep, stepDuration * 1000);
-    };
-
-    scheduleStep();
-  }
-
-  /**
-   * 停止背景音乐调度与当前残留音符。
-   */
-  stopBackgroundMusic() {
-    if (this.musicTimerId) {
-      window.clearTimeout(this.musicTimerId);
-      this.musicTimerId = 0;
-    }
-
-    for (const oscillator of this.musicOscillators) {
-      try {
-        oscillator.stop();
-      } catch (error) {
-        void error;
-      }
-    }
-
-    this.musicOscillators = [];
-  }
-
-  /**
-   * 播放背景音乐中的单个音符。
-   */
-  playMusicNote(startTime, duration, frequency, waveType, gainAmount, filterFrequency) {
-    if (!this.audioContext || !this.musicGain) {
-      return;
-    }
-
-    const oscillator = this.audioContext.createOscillator();
-    const gainNode = this.audioContext.createGain();
-    const filter = this.audioContext.createBiquadFilter();
-    const stopTime = startTime + duration;
-
-    oscillator.type = waveType;
-    oscillator.frequency.setValueAtTime(frequency, startTime);
-
-    filter.type = "lowpass";
-    filter.frequency.setValueAtTime(filterFrequency, startTime);
-
-    gainNode.gain.setValueAtTime(0.0001, startTime);
-    gainNode.gain.exponentialRampToValueAtTime(gainAmount, startTime + 0.025);
-    gainNode.gain.exponentialRampToValueAtTime(0.0001, stopTime);
-
-    oscillator.connect(filter);
-    filter.connect(gainNode);
-    gainNode.connect(this.musicGain);
-
-    oscillator.start(startTime);
-    oscillator.stop(stopTime + 0.02);
-    oscillator.onended = () => {
-      this.musicOscillators = this.musicOscillators.filter((item) => item !== oscillator);
-    };
-    this.musicOscillators.push(oscillator);
-  }
-
-  /**
-   * 统一播放入口，根据事件类型合成简单但清晰的提示音。
-   */
-  playSound(type, level = 0, strength = 0) {
-    const audioContext = this.ensureAudioContext();
-    if (!audioContext || !this.masterGain) {
-      return;
-    }
-
-    switch (type) {
-      case "drop":
-        this.playDropSound(audioContext);
-        break;
-      case "merge":
-        this.playMergeSound(audioContext, level, strength);
-        break;
-      case "impact":
-        this.playImpactSound(audioContext, level, strength);
-        break;
-      case "gameover":
-        this.playGameOverSound(audioContext);
-        break;
-      case "toggle-on":
-        this.playToggleSound(audioContext);
-        break;
-      default:
-        break;
-    }
-  }
-
-  /**
-   * 连锁奖励音：像消消乐一样，连得越多越兴奋。
-   */
-  playComboReward(combo, level) {
-    if (combo < 3) {
-      this.lastComboRewardStep = 2;
-      return;
-    }
-
-    const audioContext = this.ensureAudioContext();
-    if (!audioContext || !this.masterGain) {
-      return;
-    }
-
-    const rewardStep = Math.min(combo, 8);
-    const now = performance.now();
-    if (rewardStep === this.lastComboRewardStep && now - this.lastComboRewardAt < 260) {
-      return;
-    }
-
-    this.lastComboRewardAt = now;
-    this.lastComboRewardStep = rewardStep;
-    this.playComboScreenEffect(rewardStep);
-    this.playComboRewardSound(audioContext, rewardStep, level);
-  }
-
-  /**
-   * 连锁奖励音主体：短促 announcer 感上扬提示。
-   */
-  playComboRewardSound(audioContext, rewardStep, level) {
-    const now = audioContext.currentTime;
-    const tier = rewardStep >= 5 ? 3 : rewardStep >= 4 ? 2 : 1;
-    const base = 720 + rewardStep * 42 + level * 8;
-    const tierConfig = {
-      1: {
-        wave: "sine",
-        noteGap: 0.05,
-        duration: 0.095,
-        filter: 2300,
-        motif: [1, 1.24, 1.52],
-        accent: false
-      },
-      2: {
-        wave: "triangle",
-        noteGap: 0.045,
-        duration: 0.11,
-        filter: 2500,
-        motif: [1, 1.14, 1.38, 1.68],
-        accent: true
-      },
-      3: {
-        wave: "triangle",
-        noteGap: 0.04,
-        duration: 0.125,
-        filter: 2750,
-        motif: [1, 1.18, 1.42, 1.72, 2.02],
-        accent: true
-      }
-    };
-    const config = tierConfig[tier];
-
-    config.motif.forEach((ratio, index) => {
-      const startTime = now + index * config.noteGap;
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      const filter = audioContext.createBiquadFilter();
-      const frequency = base * ratio;
-      const peak = Math.max(0.055, 0.085 + tier * 0.018 - index * 0.006);
-
-      oscillator.type = config.wave;
-      oscillator.frequency.setValueAtTime(frequency, startTime);
-      oscillator.frequency.exponentialRampToValueAtTime(frequency * (tier === 3 ? 1.06 : 1.04), startTime + config.duration * 0.65);
-
-      filter.type = "lowpass";
-      filter.frequency.setValueAtTime(config.filter + rewardStep * 90, startTime);
-      filter.Q.value = tier === 1 ? 0.8 : 1.05;
-
-      gainNode.gain.setValueAtTime(0.0001, startTime);
-      gainNode.gain.exponentialRampToValueAtTime(peak, startTime + 0.008);
-      gainNode.gain.exponentialRampToValueAtTime(0.0001, startTime + config.duration);
-
-      oscillator.connect(filter);
-      filter.connect(gainNode);
-      gainNode.connect(this.masterGain);
-
-      oscillator.start(startTime);
-      oscillator.stop(startTime + config.duration + 0.02);
-    });
-
-    if (config.accent) {
-      const sparkle = audioContext.createOscillator();
-      const sparkleGain = audioContext.createGain();
-      const sparkleFilter = audioContext.createBiquadFilter();
-
-      sparkle.type = tier === 3 ? "sine" : "triangle";
-      sparkle.frequency.setValueAtTime(base * (tier === 3 ? 2.28 : 2.05), now + 0.02);
-      sparkle.frequency.exponentialRampToValueAtTime(base * (tier === 3 ? 2.62 : 2.34), now + 0.16);
-
-      sparkleFilter.type = "bandpass";
-      sparkleFilter.frequency.setValueAtTime(2700 + tier * 180, now);
-      sparkleFilter.Q.value = tier === 3 ? 1.8 : 1.4;
-
-      sparkleGain.gain.setValueAtTime(0.0001, now + 0.02);
-      sparkleGain.gain.exponentialRampToValueAtTime(tier === 3 ? 0.055 : 0.04, now + 0.04);
-      sparkleGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
-
-      sparkle.connect(sparkleFilter);
-      sparkleFilter.connect(sparkleGain);
-      sparkleGain.connect(this.masterGain);
-
-      sparkle.start(now + 0.02);
-      sparkle.stop(now + 0.2);
-    }
-  }
-
-  /**
-   * 投放音效：短促下落提示。
-   */
-  playDropSound(audioContext) {
-    const now = audioContext.currentTime;
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    const filter = audioContext.createBiquadFilter();
-
-    oscillator.type = "triangle";
-    oscillator.frequency.setValueAtTime(520, now);
-    oscillator.frequency.exponentialRampToValueAtTime(320, now + 0.08);
-
-    filter.type = "lowpass";
-    filter.frequency.value = 1600;
-
-    gainNode.gain.setValueAtTime(0.0001, now);
-    gainNode.gain.exponentialRampToValueAtTime(0.18, now + 0.01);
-    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
-
-    oscillator.connect(filter);
-    filter.connect(gainNode);
-    gainNode.connect(this.masterGain);
-
-    oscillator.start(now);
-    oscillator.stop(now + 0.11);
-  }
-
-  /**
-   * 合成音效：根据水果等级切换专属音色，并叠加短旋律 motif。
-   */
-  playMergeSound(audioContext, level, combo = 1) {
-    const now = audioContext.currentTime;
-    const baseFrequency = 500 * Math.pow(1.082, level);
-    const profiles = [
-      { wave: "sine", filter: 2600, ratios: [1, 1.25], volume: 0.09, decay: 0.16 },
-      { wave: "triangle", filter: 2500, ratios: [1, 1.2], volume: 0.1, decay: 0.18 },
-      { wave: "triangle", filter: 2300, ratios: [1, 1.16, 1.4], volume: 0.11, decay: 0.18 },
-      { wave: "square", filter: 1800, ratios: [1, 1.12], volume: 0.085, decay: 0.14 },
-      { wave: "triangle", filter: 2800, ratios: [1, 1.33], volume: 0.1, decay: 0.15 },
-      { wave: "sine", filter: 2100, ratios: [1, 1.5], volume: 0.11, decay: 0.2 },
-      { wave: "triangle", filter: 2400, ratios: [1, 1.25, 1.5], volume: 0.115, decay: 0.22 },
-      { wave: "square", filter: 1500, ratios: [1, 1.19, 1.42], volume: 0.09, decay: 0.16 },
-      { wave: "square", filter: 900, ratios: [0.75, 1, 1.12], volume: 0.08, decay: 0.24 },
-      { wave: "sawtooth", filter: 700, ratios: [0.5, 0.75, 1], volume: 0.095, decay: 0.28 }
-    ];
-    const profile = profiles[Math.min(level, profiles.length - 1)];
-
-    profile.ratios.forEach((ratio, index) => {
-      const startTime = now + index * 0.032;
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      const filter = audioContext.createBiquadFilter();
-      const frequency = baseFrequency * ratio;
-      const peakGain = Math.max(0.08, profile.volume + 0.03 - index * 0.01 + Math.min(combo, 6) * 0.008);
-      const stopTime = startTime + profile.decay;
-
-      oscillator.type = profile.wave;
-      oscillator.frequency.setValueAtTime(frequency, startTime);
-      oscillator.frequency.exponentialRampToValueAtTime(frequency * (level >= 8 ? 1.04 : 1.12), startTime + profile.decay * 0.45);
-
-      filter.type = level >= 8 ? "bandpass" : "lowpass";
-      filter.frequency.setValueAtTime(profile.filter + level * 80, startTime);
-      filter.Q.value = level >= 8 ? 1.8 : 0.6;
-
-      gainNode.gain.setValueAtTime(0.0001, startTime);
-      gainNode.gain.exponentialRampToValueAtTime(peakGain, startTime + 0.01);
-      gainNode.gain.exponentialRampToValueAtTime(0.0001, stopTime);
-
-      oscillator.connect(filter);
-      filter.connect(gainNode);
-      gainNode.connect(this.masterGain);
-
-      oscillator.start(startTime);
-      oscillator.stop(stopTime + 0.02);
-    });
-
-    if (level === 8 || level === 9) {
-      const thumpOscillator = audioContext.createOscillator();
-      const thumpGain = audioContext.createGain();
-      const thumpFilter = audioContext.createBiquadFilter();
-
-      thumpOscillator.type = "sine";
-      thumpOscillator.frequency.setValueAtTime(level === 8 ? 120 : 90, now);
-      thumpOscillator.frequency.exponentialRampToValueAtTime(level === 8 ? 70 : 55, now + 0.18);
-
-      thumpFilter.type = "lowpass";
-      thumpFilter.frequency.setValueAtTime(level === 8 ? 500 : 420, now);
-
-      thumpGain.gain.setValueAtTime(0.0001, now);
-      thumpGain.gain.exponentialRampToValueAtTime(level === 8 ? 0.06 : 0.08, now + 0.015);
-      thumpGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
-
-      thumpOscillator.connect(thumpFilter);
-      thumpFilter.connect(thumpGain);
-      thumpGain.connect(this.masterGain);
-
-      thumpOscillator.start(now);
-      thumpOscillator.stop(now + 0.22);
-    }
-
-    this.playMergeMotif(audioContext, level, baseFrequency);
-  }
-
-  /**
-   * 碰撞音效：轻微咚/啵声，按冲击强度与水果大小变化。
-   */
-  playImpactSound(audioContext, level, strength) {
-    const now = audioContext.currentTime;
-    const clampedStrength = this.clamp(strength, 1.6, 8);
-    const isHeavy = level >= 7;
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    const filter = audioContext.createBiquadFilter();
-
-    oscillator.type = isHeavy ? "sine" : "triangle";
-    oscillator.frequency.setValueAtTime(isHeavy ? 180 - level * 8 : 260 + level * 18, now);
-    oscillator.frequency.exponentialRampToValueAtTime(isHeavy ? 90 - level * 3 : 170 + level * 8, now + 0.08);
-
-    filter.type = isHeavy ? "lowpass" : "bandpass";
-    filter.frequency.setValueAtTime(isHeavy ? 700 : 1200 + level * 60, now);
-    filter.Q.value = isHeavy ? 0.8 : 1.5;
-
-    gainNode.gain.setValueAtTime(0.0001, now);
-    gainNode.gain.exponentialRampToValueAtTime(0.012 + clampedStrength * 0.008, now + 0.008);
-    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + (isHeavy ? 0.13 : 0.09));
-
-    oscillator.connect(filter);
-    filter.connect(gainNode);
-    gainNode.connect(this.masterGain);
-
-    oscillator.start(now);
-    oscillator.stop(now + (isHeavy ? 0.14 : 0.1));
-  }
-
-  /**
-   * 为不同水果等级播放短旋律标识，越高级越有记忆点。
-   */
-  playMergeMotif(audioContext, level, baseFrequency) {
-    const motifs = [
-      [1.18],
-      [1, 1.2],
-      [1, 1.16, 1.32],
-      [1, 1.12],
-      [1, 1.26],
-      [1, 1.2, 1.5],
-      [1, 1.25, 1.5],
-      [1, 1.12, 1.42],
-      [0.82, 1, 1.12],
-      [0.75, 0.94, 1.26, 1.5]
-    ];
-    const motif = motifs[Math.min(level, motifs.length - 1)];
-
-    motif.forEach((ratio, index) => {
-      const startTime = audioContext.currentTime + 0.02 + index * 0.055;
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      const filter = audioContext.createBiquadFilter();
-      const frequency = baseFrequency * ratio;
-      const duration = level >= 8 ? 0.12 : 0.09;
-
-      oscillator.type = level >= 9 ? "triangle" : "sine";
-      oscillator.frequency.setValueAtTime(frequency, startTime);
-      oscillator.frequency.exponentialRampToValueAtTime(frequency * 1.03, startTime + duration * 0.6);
-
-      filter.type = "lowpass";
-      filter.frequency.setValueAtTime(level >= 8 ? 1500 : 2200, startTime);
-
-      gainNode.gain.setValueAtTime(0.0001, startTime);
-      gainNode.gain.exponentialRampToValueAtTime(level >= 8 ? 0.05 : 0.04, startTime + 0.01);
-      gainNode.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
-
-      oscillator.connect(filter);
-      filter.connect(gainNode);
-      gainNode.connect(this.masterGain);
-
-      oscillator.start(startTime);
-      oscillator.stop(startTime + duration + 0.02);
-    });
-  }
-
-  /**
-   * 结束音效：明显下降的提示音。
-   */
-  playGameOverSound(audioContext) {
-    const now = audioContext.currentTime;
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    const filter = audioContext.createBiquadFilter();
-
-    oscillator.type = "sawtooth";
-    oscillator.frequency.setValueAtTime(330, now);
-    oscillator.frequency.exponentialRampToValueAtTime(140, now + 0.45);
-
-    filter.type = "lowpass";
-    filter.frequency.setValueAtTime(900, now);
-    filter.frequency.exponentialRampToValueAtTime(420, now + 0.45);
-
-    gainNode.gain.setValueAtTime(0.0001, now);
-    gainNode.gain.exponentialRampToValueAtTime(0.18, now + 0.02);
-    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
-
-    oscillator.connect(filter);
-    filter.connect(gainNode);
-    gainNode.connect(this.masterGain);
-
-    oscillator.start(now);
-    oscillator.stop(now + 0.52);
-  }
-
-  /**
-   * 音效开启时播放轻提示，给用户即时反馈。
-   */
-  playToggleSound(audioContext) {
-    const now = audioContext.currentTime;
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-
-    oscillator.type = "triangle";
-    oscillator.frequency.setValueAtTime(740, now);
-    oscillator.frequency.exponentialRampToValueAtTime(980, now + 0.08);
-
-    gainNode.gain.setValueAtTime(0.0001, now);
-    gainNode.gain.exponentialRampToValueAtTime(0.12, now + 0.01);
-    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
-
-    oscillator.connect(gainNode);
-    gainNode.connect(this.masterGain);
-
-    oscillator.start(now);
-    oscillator.stop(now + 0.11);
   }
 
   /**
@@ -2304,68 +2187,21 @@ window.addEventListener("load", () => {
     }
   });
 
-  // ── 手机端声音修复：每次触摸时尝试恢复 AudioContext ──
+  // ── 手机端声音修复：首次触摸时用 OfflineAudioContext 预渲染所有音效 ──
   let audioUnlocked = false;
   function resumeAudio() {
     if (audioUnlocked) return;
     if (!g) return;
 
-    // 情况1: 已有 AudioContext，尝试 resume
-    if (g.audioContext && g.audioContext.state !== "closed") {
-      if (g.audioContext.state === "suspended") {
-        g.audioContext.resume();
-      }
-      // 播放一个极短的静音来锁定 iOS 音频激活
-      try {
-        const buf = g.audioContext.createBuffer(1, 1, 22050);
-        const src = g.audioContext.createBufferSource();
-        src.buffer = buf;
-        const gain = g.audioContext.createGain();
-        gain.gain.value = 0;
-        src.connect(gain);
-        gain.connect(g.audioContext.destination);
-        src.start(0);
-      } catch (e) { /* ignore */ }
-
-      audioUnlocked = true;
-      // 如果音乐还没启动，启动它
-      if (!g.musicTimerId && !g.isPaused && !g.isGameOver) {
-        g.startBackgroundMusic();
-      }
-      return;
-    }
-
-    // 情况2: 没有 AudioContext 或已关闭 → 在用户手势中创建全新的
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContextClass) return;
-
-    const newCtx = new AudioContextClass();
-
-    // 播放静音解锁
-    try {
-      const silentBuffer = newCtx.createBuffer(1, 1, 22050);
-      const source = newCtx.createBufferSource();
-      source.buffer = silentBuffer;
-      const silentGain = newCtx.createGain();
-      silentGain.gain.value = 0;
-      source.connect(silentGain);
-      silentGain.connect(newCtx.destination);
-      source.start(0);
-    } catch (e) { /* ignore */ }
-
-    g.audioContext = newCtx;
-    g.masterGain = newCtx.createGain();
-    g.masterGain.connect(newCtx.destination);
-    g.musicGain = newCtx.createGain();
-    g.musicGain.connect(g.masterGain);
-    g.applyVolume();
-
     audioUnlocked = true;
 
-    g.stopBackgroundMusic();
-    if (!g.isPaused && !g.isGameOver) {
-      g.startBackgroundMusic();
-    }
+    // 用 OfflineAudioContext 预渲染所有音效为 WAV Blob URL
+    // 之后通过 <audio> 元素播放（走媒体音量，而非 iOS 铃声通道）
+    g.audio.preRenderAll().then(() => {
+      if (!g.isPaused && !g.isGameOver) {
+        g.startBackgroundMusic();
+      }
+    });
   }
   document.addEventListener("touchstart", resumeAudio);
   document.addEventListener("click", resumeAudio);
