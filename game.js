@@ -110,7 +110,6 @@ class FruitMergeGame {
     this.musicTimerId = 0;
     this.musicStepIndex = 0;
     this.soundEnabled = true;
-    this.audioReady = false;
     this.comboBadgeEl = document.getElementById("comboMultiplierBadge");
     this.collectionCountEl = document.getElementById("collectionCount");
 
@@ -1558,10 +1557,6 @@ class FruitMergeGame {
       return null;
     }
 
-    if (!this.audioReady) {
-      return null;
-    }
-
     if (!this.audioContext) {
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
       if (!AudioContextClass) {
@@ -2309,48 +2304,69 @@ window.addEventListener("load", () => {
     }
   });
 
-  // ── 手机端声音修复：首次触摸时创建并解锁 AudioContext ──
+  // ── 手机端声音修复：每次触摸时尝试恢复 AudioContext ──
+  let audioUnlocked = false;
   function resumeAudio() {
+    if (audioUnlocked) return;
     if (!g) return;
+
+    // 情况1: 已有 AudioContext，尝试 resume
+    if (g.audioContext && g.audioContext.state !== "closed") {
+      if (g.audioContext.state === "suspended") {
+        g.audioContext.resume();
+      }
+      // 播放一个极短的静音来锁定 iOS 音频激活
+      try {
+        const buf = g.audioContext.createBuffer(1, 1, 22050);
+        const src = g.audioContext.createBufferSource();
+        src.buffer = buf;
+        const gain = g.audioContext.createGain();
+        gain.gain.value = 0;
+        src.connect(gain);
+        gain.connect(g.audioContext.destination);
+        src.start(0);
+      } catch (e) { /* ignore */ }
+
+      audioUnlocked = true;
+      // 如果音乐还没启动，启动它
+      if (!g.musicTimerId && !g.isPaused && !g.isGameOver) {
+        g.startBackgroundMusic();
+      }
+      return;
+    }
+
+    // 情况2: 没有 AudioContext 或已关闭 → 在用户手势中创建全新的
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     if (!AudioContextClass) return;
 
-    // 在用户手势中创建全新的 AudioContext（移动端必须）
     const newCtx = new AudioContextClass();
 
-    // 播放一段极短的静音来彻底解锁音频
-    const silentBuffer = newCtx.createBuffer(1, 1, 22050);
-    const source = newCtx.createBufferSource();
-    source.buffer = silentBuffer;
-    const silentGain = newCtx.createGain();
-    silentGain.gain.value = 0;
-    source.connect(silentGain);
-    silentGain.connect(newCtx.destination);
-    source.start(0);
+    // 播放静音解锁
+    try {
+      const silentBuffer = newCtx.createBuffer(1, 1, 22050);
+      const source = newCtx.createBufferSource();
+      source.buffer = silentBuffer;
+      const silentGain = newCtx.createGain();
+      silentGain.gain.value = 0;
+      source.connect(silentGain);
+      silentGain.connect(newCtx.destination);
+      source.start(0);
+    } catch (e) { /* ignore */ }
 
-    // 替换游戏中的音频上下文
-    if (g.audioContext && g.audioContext.state !== "closed") {
-      try { g.audioContext.close(); } catch (e) { /* ignore */ }
-    }
     g.audioContext = newCtx;
-    g.audioReady = true;
-
-    // 重建增益节点
     g.masterGain = newCtx.createGain();
     g.masterGain.connect(newCtx.destination);
     g.musicGain = newCtx.createGain();
     g.musicGain.connect(g.masterGain);
     g.applyVolume();
 
-    // 停掉旧音乐，重新启动
+    audioUnlocked = true;
+
     g.stopBackgroundMusic();
     if (!g.isPaused && !g.isGameOver) {
       g.startBackgroundMusic();
     }
-
-    document.removeEventListener("touchstart", resumeAudio);
-    document.removeEventListener("click", resumeAudio);
   }
-  document.addEventListener("touchstart", resumeAudio, { once: true });
-  document.addEventListener("click", resumeAudio, { once: true });
+  document.addEventListener("touchstart", resumeAudio);
+  document.addEventListener("click", resumeAudio);
 });
