@@ -38,8 +38,19 @@ class AudioManager {
     this.musicVolume = 0.14;
     this.enabled = true;
     this._cache = {};
+    this._pool = {};      // { name: [Audio, Audio, ...] }
     this._bgmUrl = null;
     this._bgmAudio = null;
+  }
+
+  /* ── 预创建 Audio 元素池 ── */
+  _prepareAudio(name, url, poolSize = 1) {
+    this._pool[name] = [];
+    for (let i = 0; i < poolSize; i++) {
+      const a = new Audio(url);
+      a.volume = this.sfxVolume;
+      this._pool[name].push(a);
+    }
   }
 
   /* ── 预渲染所有音效 ── */
@@ -47,7 +58,7 @@ class AudioManager {
     const sr = 44100;
 
     // 投放音
-    this._cache.drop = await this._render(sr, 0.15, (ctx, t) => {
+    const dropUrl = await this._render(sr, 0.15, (ctx, t) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       const filter = ctx.createBiquadFilter();
@@ -137,6 +148,18 @@ class AudioManager {
 
     // 背景音乐：完整循环
     this._bgmUrl = await this._renderBGM(sr);
+
+    // 预创建 Audio 元素池（避免运行时 new Audio）
+    this._prepareAudio("drop", this._cache.drop, 1);
+    this._prepareAudio("gameover", this._cache.gameover, 1);
+    this._prepareAudio("toggle", this._cache.toggle, 1);
+    this._prepareAudio("impact", this._cache.impact, 3); // 碰撞频繁，池大一点
+    for (let i = 0; i <= 9; i++) {
+      this._prepareAudio("merge_" + i, this._cache["merge_" + i], 2);
+    }
+    for (let i = 1; i <= 3; i++) {
+      this._prepareAudio("combo_" + i, this._cache["combo_" + i], 1);
+    }
   }
 
   /* ── 合并音渲染 ── */
@@ -403,10 +426,14 @@ class AudioManager {
 
   /** 播放音效 */
   play(name) {
-    if (!this.enabled || !this._cache[name]) return;
-    const a = new Audio(this._cache[name]);
-    a.volume = this.sfxVolume;
-    a.play().catch(() => {});
+    if (!this.enabled || !this._pool[name]) return;
+    const pool = this._pool[name];
+    // 找空闲的 Audio 元素，全部在播放就重头播
+    let audio = pool.find(a => a.paused || a.ended);
+    if (!audio) audio = pool[0];
+    audio.currentTime = 0;
+    audio.volume = this.sfxVolume;
+    audio.play().catch(() => {});
   }
 
   /** 播放合并音 (按等级) */
