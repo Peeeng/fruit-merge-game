@@ -2196,17 +2196,20 @@ window.addEventListener("load", () => {
     if (g) g.resumeGame();
   });
 
-  // 分享（微信不支持带文件的 Web Share）
+  // 分享
   document.getElementById("shareButton")?.addEventListener("click", () => {
     if (!g) return;
     const text = "我在合成水果中获得了 " + g.score + " 分！最高连击 " + g.maxCombo + "！来挑战我吧 🍎";
 
-    // 尝试 Web Share（不带文件，微信兼容）
+    // 微信浏览器不支持 navigator.share，直接下载
+    if (/MicroMessenger/i.test(navigator.userAgent)) {
+      downloadScoreImage();
+      return;
+    }
+
+    // 其他浏览器尝试 Web Share
     if (navigator.share) {
-      navigator.share({ title: "合成水果", text }).catch(() => {
-        // 降级：下载图片
-        downloadScoreImage();
-      });
+      navigator.share({ title: "合成水果", text }).catch(() => downloadScoreImage());
     } else {
       downloadScoreImage();
     }
