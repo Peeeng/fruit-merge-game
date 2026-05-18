@@ -882,9 +882,12 @@ class FruitMergeGame {
     this.playComboReward(this.combo, nextLevel);
   }
 
-  /** 碰撞音效 */
+  /** 碰撞音效（75ms 节流） */
   playImpactSoundForPair(pair) {
     if (!this.soundEnabled) return;
+    const now = performance.now();
+    if (now - (this._lastImpactTime || 0) < 75) return;
+    this._lastImpactTime = now;
     this.audio.play("impact");
   }
 
@@ -1930,17 +1933,16 @@ class FruitMergeGame {
     }
   }
 
-  /** 连击奖励音 */
+  /** 连击奖励音（260ms 去重） */
   playComboReward(combo, _level) {
     if (combo < 3) return;
+    const now = performance.now();
+    const step = Math.min(combo, 8);
+    if (step === (this._lastComboStep || 0) && now - (this._lastComboTime || 0) < 260) return;
+    this._lastComboStep = step;
+    this._lastComboTime = now;
     this.audio.playCombo(combo);
-    this.playComboScreenEffect(Math.min(combo, 8));
-  }
-
-  /** 碰撞音效（简化：委托给 AudioManager） */
-  playImpactSoundForPair(pair) {
-    if (!this.soundEnabled) return;
-    this.audio.play("impact");
+    this.playComboScreenEffect(step);
   }
 
   /** 启动背景音乐 */
@@ -2167,19 +2169,22 @@ window.addEventListener("load", () => {
     if (g) g.resumeGame();
   });
 
-  // 分享
+  // 分享（微信不支持带文件的 Web Share）
   document.getElementById("shareButton")?.addEventListener("click", () => {
     if (!g) return;
+    const text = "我在合成水果中获得了 " + g.score + " 分！最高连击 " + g.maxCombo + "！来挑战我吧 🍎";
+
+    // 尝试 Web Share（不带文件，微信兼容）
     if (navigator.share) {
-      g.canvas.toBlob((blob) => {
-        if (!blob) return;
-        navigator.share({
-          title: "合成水果",
-          text: "我在合成水果中获得了 " + g.score + " 分！最高连击 " + g.maxCombo + "！来挑战我吧 🍎",
-          files: [new File([blob], "fruit-merge-score.png", { type: "image/png" })]
-        }).catch(() => {});
+      navigator.share({ title: "合成水果", text }).catch(() => {
+        // 降级：下载图片
+        downloadScoreImage();
       });
     } else {
+      downloadScoreImage();
+    }
+
+    function downloadScoreImage() {
       const link = document.createElement("a");
       link.download = "fruit-merge-score.png";
       link.href = g.canvas.toDataURL("image/png");
